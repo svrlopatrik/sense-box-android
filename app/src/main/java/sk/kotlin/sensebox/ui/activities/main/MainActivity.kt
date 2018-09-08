@@ -1,7 +1,8 @@
-package sk.kotlin.sensebox
+package sk.kotlin.sensebox.ui.activities.main
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
+import sk.kotlin.sensebox.R
 
 class MainActivity : AppCompatActivity() {
 
