@@ -6,7 +6,9 @@ import dagger.Provides
 import sk.kotlin.sensebox.SenseBoxApp
 import sk.kotlin.sensebox.di.ApplicationScope
 
-
+/**
+ * Created by Patrik Švrlo on 8.9.2018.
+ */
 @Module(includes = [(ActivityModule::class), (ViewModelModule::class)])
 class AppModule(private val senseBoxApp: SenseBoxApp) {
 

@@ -1,6 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">@color/cc_cy_500</color>
+    <color name="colorPrimaryDark">@color/cc_cy_600</color>
+    <color name="colorAccent">@color/cc_bg_400</color>
+
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
+
+    <color name="cc_bg_50">#ECEFF1</color>
+    <color name="cc_bg_100">#CFD8DC</color>
+    <color name="cc_bg_200">#B0BEC5</color>
+    <color name="cc_bg_300">#90A4AE</color>
+    <color name="cc_bg_400">#78909C</color>
+    <color name="cc_bg_500">#607D8B</color>
+    <color name="cc_bg_600">#546E7A</color>
+    <color name="cc_bg_700">#455A64</color>
+    <color name="cc_bg_800">#37474F</color>
+    <color name="cc_bg_900">#263238</color>
+
+    <color name="cc_cy_50">#E0F7FA</color>
+    <color name="cc_cy_100">#B2EBF2</color>
+    <color name="cc_cy_200">#80DEEA</color>
+    <color name="cc_cy_300">#4DD0E1</color>
+    <color name="cc_cy_400">#26C6DA</color>
+    <color name="cc_cy_500">#00BCD4</color>
+    <color name="cc_cy_600">#00ACC1</color>
+    <color name="cc_cy_700">#0097A7</color>
+    <color name="cc_cy_800">#00838F</color>
+    <color name="cc_cy_900">#006064</color>
+
+    <color name="cc_rd_800">#C62828</color>
+    <color name="cc_gn_800">#2E7D32</color>
+    <color name="cc_yw_800">#F9A825</color>
+
+
 </resources>

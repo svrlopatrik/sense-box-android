@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SenseBox</string>
+
+    <string name="live_uc">LIVE</string>
+    <string name="history_uc">HISTORY</string>
+    <string name="settings_uc">SETTINGS</string>
+
+
 </resources>

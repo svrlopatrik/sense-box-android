@@ -8,6 +8,9 @@ import sk.kotlin.sensebox.di.AppInjector
 import timber.log.Timber
 import javax.inject.Inject
 
+/**
+ * Created by Patrik Švrlo on 8.9.2018.
+ */
 class SenseBoxApp : Application(), HasActivityInjector {
 
     @Inject

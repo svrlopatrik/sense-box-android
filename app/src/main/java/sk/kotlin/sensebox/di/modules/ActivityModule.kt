@@ -4,11 +4,11 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import sk.kotlin.sensebox.ui.activities.main.MainActivity
 
-
-@Module
 /**
- * Define all activities inside this module
+ * Created by Patrik Švrlo on 8.9.2018.
  */
+@Module
+
 public abstract class ActivityModule {
 
     @ContributesAndroidInjector(modules = [FragmentModule::class])

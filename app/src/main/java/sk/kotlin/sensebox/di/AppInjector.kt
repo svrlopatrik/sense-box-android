@@ -12,7 +12,9 @@ import dagger.android.support.HasSupportFragmentInjector
 import sk.kotlin.sensebox.SenseBoxApp
 import sk.kotlin.sensebox.di.modules.AppModule
 
-
+/**
+ * Created by Patrik Švrlo on 8.9.2018.
+ */
 class AppInjector private constructor() {
 
     companion object {

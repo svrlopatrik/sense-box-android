@@ -92,6 +92,6 @@ dependencies {
     //Easy permissions
     implementation "pub.devrel:easypermissions:$easy_permissions"
 
-    //Charts
+    //UI
     implementation "com.github.PhilJay:MPAndroidChart:v$mp_android_chart"
 }

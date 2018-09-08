@@ -6,7 +6,9 @@ import sk.kotlin.sensebox.di.ApplicationScope
 import javax.inject.Inject
 import javax.inject.Provider
 
-
+/**
+ * Created by Patrik Švrlo on 8.9.2018.
+ */
 @ApplicationScope
 class ViewModelFactory @Inject constructor(private val creators: Map<Class<out ViewModel>,
         @JvmSuppressWildcards Provider<ViewModel>>) : ViewModelProvider.Factory {

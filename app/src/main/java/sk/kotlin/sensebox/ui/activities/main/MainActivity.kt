@@ -1,13 +1,27 @@
 package sk.kotlin.sensebox.ui.activities.main
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import sk.kotlin.sensebox.R
+import sk.kotlin.sensebox.bl.vm.MainActivityViewModel
+import sk.kotlin.sensebox.ui.activities.BaseActivity
 
-class MainActivity : AppCompatActivity() {
+/**
+ * Created by Patrik Švrlo on 8.9.2018.
+ */
+class MainActivity : BaseActivity<MainActivityViewModel>(MainActivityViewModel::class.java) {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    companion object {
+        fun startActivity(context: Context) {
+            context.startActivity(Intent(context, MainActivity::class.java))
+        }
     }
+
+    override fun setLayout() = R.layout.activity_main
+
+    override fun initViews(savedInstanceState: Bundle?) {
+
+    }
+
 }

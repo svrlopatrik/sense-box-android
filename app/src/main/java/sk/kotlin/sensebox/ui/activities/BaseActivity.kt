@@ -14,6 +14,9 @@ import sk.kotlin.sensebox.bl.vm.BaseViewModel
 import sk.kotlin.sensebox.bl.vm.ViewModelFactory
 import javax.inject.Inject
 
+/**
+ * Created by Patrik Švrlo on 8.9.2018.
+ */
 abstract class BaseActivity<V : BaseViewModel>(private val viewModelClass: Class<V>?) : AppCompatActivity(), HasSupportFragmentInjector {
     constructor() : this(null)
 

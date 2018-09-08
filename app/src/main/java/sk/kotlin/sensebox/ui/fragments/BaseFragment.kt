@@ -15,6 +15,9 @@ import sk.kotlin.sensebox.di.Injectable
 import sk.kotlin.sensebox.utils.inflate
 import javax.inject.Inject
 
+/**
+ * Created by Patrik Švrlo on 8.9.2018.
+ */
 abstract class BaseFragment<V : BaseViewModel> : Fragment(), Injectable {
 
     @Inject

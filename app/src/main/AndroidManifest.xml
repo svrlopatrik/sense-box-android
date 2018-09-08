@@ -20,7 +20,14 @@
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".ui.activities.main.MainActivity">
+        <activity
+            android:name=".ui.activities.splash.SplashActivity"
+            android:theme="@style/SplashTheme"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activities.main.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -7,7 +7,9 @@ import sk.kotlin.sensebox.di.modules.AppModule
 import sk.kotlin.sensebox.di.modules.BluetoothModule
 import sk.kotlin.sensebox.di.modules.DatabaseModule
 
-
+/**
+ * Created by Patrik Švrlo on 8.9.2018.
+ */
 @ApplicationScope
 @Component(modules = [AndroidSupportInjectionModule::class,
     AppModule::class,

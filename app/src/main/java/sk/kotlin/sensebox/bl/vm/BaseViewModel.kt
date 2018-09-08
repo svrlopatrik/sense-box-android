@@ -5,7 +5,9 @@ import android.os.Bundle
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 
-
+/**
+ * Created by Patrik Švrlo on 8.9.2018.
+ */
 abstract class BaseViewModel : ViewModel() {
 
     protected val disposables: CompositeDisposable by lazy {
