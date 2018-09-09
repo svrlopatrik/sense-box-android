@@ -4,6 +4,16 @@
     <string name="live_uc">LIVE</string>
     <string name="history_uc">HISTORY</string>
     <string name="settings_uc">SETTINGS</string>
+    <string name="last_update">last update: %s</string>
+    <string name="refresh">refresh</string>
+    <string name="title_temperature">Temperature:</string>
+    <string name="title_humidity">Humidity:</string>
+    <string name="celsius_unit_symbol">°C</string>
+    <string name="fahrenheit_Unit_symbol">°F</string>
+    <string name="humidity_unit_symbol">%</string>
+    <string name="not_measured_symbol">___.__</string>
+    <string name="list_no_items">There are no items in the list.</string>
+    <string name="temperature_unit">Temperature unit:</string>
 
 
 </resources>
