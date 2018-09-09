@@ -11,6 +11,12 @@ import sk.kotlin.sensebox.ui.fragments.BaseFragment
  */
 class SettingsFragment : BaseFragment<SettingsFragmentViewModel>() {
 
+    companion object {
+        fun getFragment(): SettingsFragment {
+            return SettingsFragment()
+        }
+    }
+
     override fun setLayout() = R.layout.fragment_settings
 
     override fun setViewModel() = ViewModelProviders.of(this, viewModelFactory).get(SettingsFragmentViewModel::class.java)

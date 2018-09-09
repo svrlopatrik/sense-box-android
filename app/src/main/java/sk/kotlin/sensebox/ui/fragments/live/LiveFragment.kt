@@ -11,6 +11,12 @@ import sk.kotlin.sensebox.ui.fragments.BaseFragment
  */
 class LiveFragment : BaseFragment<LiveFragmentViewModel>() {
 
+    companion object {
+        fun getFragment(): LiveFragment {
+            return LiveFragment()
+        }
+    }
+
     override fun setLayout() = R.layout.fragment_live
 
     override fun setViewModel() = ViewModelProviders.of(this, viewModelFactory).get(LiveFragmentViewModel::class.java)

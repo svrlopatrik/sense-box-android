@@ -11,6 +11,12 @@ import sk.kotlin.sensebox.ui.fragments.BaseFragment
  */
 class HistoryFragment : BaseFragment<HistoryFragmentViewModel>() {
 
+    companion object {
+        fun getFragment(): HistoryFragment {
+            return HistoryFragment()
+        }
+    }
+
     override fun setLayout() = R.layout.fragment_history
 
     override fun setViewModel() = ViewModelProviders.of(this, viewModelFactory).get(HistoryFragmentViewModel::class.java)
