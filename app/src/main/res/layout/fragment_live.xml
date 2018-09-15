@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
+        <import type="sk.kotlin.sensebox.utils.ValueInterpreter" />
+
+        <variable
+            name="viewModel"
+            type="sk.kotlin.sensebox.bl.vm.LiveFragmentViewModel" />
     </data>
 
     <android.support.constraint.ConstraintLayout
@@ -29,9 +35,12 @@
             android:layout_marginEnd="32dp"
             android:layout_marginStart="32dp"
             android:layout_marginTop="8dp"
+            android:text="@{@string/last_update(ValueInterpreter.millisToFormattedDate(viewModel.actualTimestamp.millis, viewModel.actualTimestamp.format))}"
+            android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button_refresh" />
+            app:layout_constraintTop_toBottomOf="@+id/button_refresh"
+            tools:text="29.Jan.2018 13:45:46" />
 
         <TextView
             android:id="@+id/text_title_temperature"
@@ -48,8 +57,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
+            android:text="@{ValueInterpreter.floatToString(viewModel.actualTemperature.value, 2) + ' ' + viewModel.actualTemperature.unit}"
             app:layout_constraintBaseline_toBaselineOf="@+id/text_title_temperature"
-            app:layout_constraintStart_toEndOf="@+id/text_title_temperature" />
+            app:layout_constraintStart_toEndOf="@+id/text_title_temperature"
+            tools:text="21.10 °C" />
 
         <TextView
             android:id="@+id/text_title_humidity"
@@ -65,7 +76,9 @@
             android:id="@+id/text_value_humidity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@{ValueInterpreter.floatToString(viewModel.actualHumidity.value, 2) + ' ' + viewModel.actualHumidity.unit}"
             app:layout_constraintBaseline_toBaselineOf="@+id/text_title_humidity"
-            app:layout_constraintStart_toStartOf="@+id/text_value_temperature" />
+            app:layout_constraintStart_toStartOf="@+id/text_value_temperature"
+            tools:text="55.50 %" />
     </android.support.constraint.ConstraintLayout>
 </layout>

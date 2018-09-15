@@ -38,6 +38,10 @@ class PreferencesManager(
         return preferences.getFloat(key.name, default)
     }
 
+    fun getByte(key: PreferenceKey, default: Byte = 0xFF.toByte()): Byte {
+        return preferences.getInt(key.name, default.toInt()).toByte()
+    }
+
     fun storeString(key: PreferenceKey, value: String) {
         preferences.edit().putString(key.name, value).commit()
     }
@@ -48,6 +52,10 @@ class PreferencesManager(
 
     fun storeFloat(key: PreferenceKey, value: Float) {
         preferences.edit().putFloat(key.name, value).commit()
+    }
+
+    fun storeByte(key: PreferenceKey, value: Byte) {
+        preferences.edit().putInt(key.name, value.toInt()).commit()
     }
 
     inner class Builder {
@@ -68,6 +76,11 @@ class PreferencesManager(
             return this
         }
 
+        fun setByte(key: PreferenceKey, value: Byte): Builder {
+            editor.putInt(key.name, value.toInt())
+            return this
+        }
+
         fun store() {
             editor.commit()
         }
@@ -76,7 +89,9 @@ class PreferencesManager(
     enum class PreferenceKey {
         LAST_ACTUAL_TIMESTAMP,
         LAST_ACTUAL_TEMPERATURE,
-        LAST_ACTUAL_HUMIDITY
+        LAST_ACTUAL_HUMIDITY,
+        UNIT_TEMPERATURE,
+        TIME_FORMAT
     }
 
 }

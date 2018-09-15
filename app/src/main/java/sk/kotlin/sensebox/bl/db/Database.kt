@@ -2,7 +2,7 @@ package sk.kotlin.sensebox.bl.db
 
 import android.arch.persistence.room.Database
 import android.arch.persistence.room.RoomDatabase
-import sk.kotlin.Constants
+import sk.kotlin.sensebox.Constants
 import sk.kotlin.sensebox.bl.db.daos.FileDao
 import sk.kotlin.sensebox.bl.db.daos.RecordDao
 import sk.kotlin.sensebox.bl.db.entities.File

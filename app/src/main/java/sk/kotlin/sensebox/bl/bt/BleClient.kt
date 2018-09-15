@@ -14,7 +14,7 @@ import android.support.annotation.RequiresApi
 import android.support.v4.app.Fragment
 import io.reactivex.*
 import io.reactivex.Observable
-import sk.kotlin.Constants
+import sk.kotlin.sensebox.Constants
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -152,9 +152,8 @@ class BleClient(val context: Context) {
                 .take(1)
                 .flatMapSingle { scanResult ->
                     when (scanResult) {
-                        is BleResult.Failure -> Single.fromCallable { scanResult }
                         is BleResult.DeviceFound -> reconnect(scanResult.bleDevice, autoConnect)
-                        else -> Single.never()
+                        else -> Single.fromCallable { scanResult }
                     }
                 }
                 .singleOrError()

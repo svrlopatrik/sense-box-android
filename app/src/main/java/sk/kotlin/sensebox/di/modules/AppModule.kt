@@ -3,7 +3,7 @@ package sk.kotlin.sensebox.di.modules
 import android.content.Context
 import dagger.Module
 import dagger.Provides
-import sk.kotlin.Constants
+import sk.kotlin.sensebox.Constants
 import sk.kotlin.sensebox.SenseBoxApp
 import sk.kotlin.sensebox.bl.PreferencesManager
 import sk.kotlin.sensebox.di.ApplicationScope

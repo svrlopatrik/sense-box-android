@@ -36,6 +36,7 @@ abstract class BaseActivity<V : BaseViewModel>(private val viewModelClass: Class
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = DataBindingUtil.setContentView(this, setLayout())
+        viewBinding?.setLifecycleOwner(this)
 
         viewModelClass?.let { vmClass ->
             viewModel = ViewModelProviders.of(this, viewModelFactory).get(vmClass).also {

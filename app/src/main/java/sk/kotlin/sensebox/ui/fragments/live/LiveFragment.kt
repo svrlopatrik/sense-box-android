@@ -1,10 +1,14 @@
 package sk.kotlin.sensebox.ui.fragments.live
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_live.*
+import sk.kotlin.sensebox.BR
 import sk.kotlin.sensebox.R
 import sk.kotlin.sensebox.bl.vm.LiveFragmentViewModel
+import sk.kotlin.sensebox.models.states.LiveFragmentState
 import sk.kotlin.sensebox.ui.fragments.BaseFragment
 
 /**
@@ -23,7 +27,33 @@ class LiveFragment : BaseFragment<LiveFragmentViewModel>() {
     override fun setViewModel() = ViewModelProviders.of(this, viewModelFactory).get(LiveFragmentViewModel::class.java)
 
     override fun initViews(savedInstanceState: Bundle?) {
-        text_value_temperature.text = String.format("%s %s", getString(R.string.not_measured_symbol), getString(R.string.celsius_unit_symbol))   //todo load unit from settings
-        text_value_humidity.text = String.format("%s %s", getString(R.string.not_measured_symbol), getString(R.string.humidity_unit_symbol))
+        viewBinding?.apply {
+            setVariable(BR.viewModel, viewModel)
+        }
+
+        observeState()
+        initRefreshButton()
     }
+
+    private fun observeState() {
+        viewModel?.let { viewModel ->
+            viewModel.getLiveFragmentState().observe(this, Observer { state -> state?.let { render(it) } })
+        }
+    }
+
+    private fun render(state: LiveFragmentState) {
+        when (state) {
+            is LiveFragmentState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun initRefreshButton() {
+        button_refresh.setOnClickListener {
+            viewModel?.loadActualData()
+        }
+    }
+
+
 }

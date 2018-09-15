@@ -1,14 +1,158 @@
 package sk.kotlin.sensebox.bl.vm
 
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
+import android.bluetooth.BluetoothProfile
 import android.os.Bundle
+import io.reactivex.Flowable
+import io.reactivex.Single
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
+import sk.kotlin.sensebox.Constants
+import sk.kotlin.sensebox.R
+import sk.kotlin.sensebox.SenseBoxApp
+import sk.kotlin.sensebox.bl.PreferencesManager
+import sk.kotlin.sensebox.bl.PreferencesManager.PreferenceKey
+import sk.kotlin.sensebox.bl.bt.BleClient
+import sk.kotlin.sensebox.bl.bt.BleResult
+import sk.kotlin.sensebox.models.states.LiveFragmentState
+import sk.kotlin.sensebox.utils.SingleLiveEvent
+import sk.kotlin.sensebox.utils.ValueInterpreter
 import javax.inject.Inject
 
 /**
  * Created by Patrik Švrlo on 8.9.2018.
  */
-class LiveFragmentViewModel @Inject constructor() : BaseViewModel() {
+class LiveFragmentViewModel @Inject constructor(
+        private val application: SenseBoxApp,
+        private val bleClient: BleClient,
+        private val prefs: PreferencesManager
+) : BaseViewModel() {
+    private val liveFragmentState = MutableLiveData<LiveFragmentState>()
+
+    private val actualTimestamp = SingleLiveEvent<LiveFragmentState.Timestamp>()
+    private val actualTemperature = SingleLiveEvent<LiveFragmentState.Temperature>()
+    private val actualHumidity = SingleLiveEvent<LiveFragmentState.Humidity>()
+
+    private var loadActualDisposable: Disposable? = null
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) {
+            addDisposable(bleClient.connectionState()
+                    .filter { it == BluetoothProfile.STATE_DISCONNECTED }
+                    .subscribeOn(Schedulers.newThread())
+                    .subscribe { disposeActualDataLoading() }
+            )
+        }
+
+        if (prefs.exists(PreferenceKey.LAST_ACTUAL_TIMESTAMP)) {
+            val timestamp = prefs.getInt(PreferenceKey.LAST_ACTUAL_TIMESTAMP)
+            actualTimestamp.value = createTimestampState(timestamp)
+        }
+
+        if (prefs.exists(PreferenceKey.LAST_ACTUAL_TEMPERATURE)) {
+            val temperature = prefs.getFloat(PreferenceKey.LAST_ACTUAL_TEMPERATURE)
+            actualTemperature.value = createTemperatureState(temperature)
+        }
+
+        if (prefs.exists(PreferenceKey.LAST_ACTUAL_HUMIDITY)) {
+            val humidity = prefs.getFloat(PreferenceKey.LAST_ACTUAL_HUMIDITY)
+            actualHumidity.value = createHumidityState(humidity)
+        }
 
     }
+
+    fun loadActualData() {
+        disposeActualDataLoading()
+
+        loadActualDisposable = bleClient.connect(Constants.BLE_DEVICE_MAC)
+                .flatMap {
+                    when (it) {
+                        is BleResult.Connected -> bleClient.writeCharacteristic(Constants.BLE_UUID_SERVICE, Constants.BLE_UUID_CHARACTERISTIC, Constants.REQUEST_CODE_ACTUAL)
+                        else -> Single.fromCallable { it }
+                    }
+                }
+                .toFlowable()
+                .flatMap {
+                    when (it) {
+                        BleResult.CharacteristicsWritten -> bleClient.notifyCharacteristics(Constants.BLE_UUID_SERVICE, Constants.BLE_UUID_CHARACTERISTIC, Constants.BLE_UUID_DESCRIPTOR)
+                        else -> Flowable.fromCallable { it }
+                    }
+                }
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(
+                        {
+                            when (it) {
+                                is BleResult.Success -> {
+                                    when (it.data[0]) {
+                                        Constants.RESPONSE_FLAG_TIMESTAMP -> {
+                                            val timestamp = ValueInterpreter.byteArrayToInt(it.data.copyOfRange(1, 5))
+                                            prefs.storeInt(PreferenceKey.LAST_ACTUAL_TIMESTAMP, timestamp)
+                                            val timestampState = createTimestampState(timestamp)
+                                            actualTimestamp.postValue(timestampState)
+                                            liveFragmentState.postValue(timestampState)
+                                        }
+                                        Constants.RESPONSE_FLAG_TEMPERATURE -> {
+                                            val temperature = ValueInterpreter.byteArrayToFloat(it.data.copyOfRange(1, 5))
+                                            prefs.storeFloat(PreferenceKey.LAST_ACTUAL_TEMPERATURE, temperature)
+                                            val temperatureState = createTemperatureState(temperature)
+                                            actualTemperature.postValue(temperatureState)
+                                            liveFragmentState.postValue(temperatureState)
+                                        }
+                                        Constants.RESPONSE_FLAG_HUMIDITY -> {
+                                            val humidity = ValueInterpreter.byteArrayToFloat(it.data.copyOfRange(1, 5))
+                                            prefs.storeFloat(PreferenceKey.LAST_ACTUAL_HUMIDITY, humidity)
+                                            val humidityState = createHumidityState(humidity)
+                                            actualHumidity.postValue(humidityState)
+                                            liveFragmentState.postValue(humidityState)
+                                        }
+                                    }
+                                }
+                                is BleResult.Failure -> {
+                                    liveFragmentState.postValue(LiveFragmentState.Error(it.bleFailState.name))
+                                }
+                            }
+                        },
+                        { println("onError: ${it.message}") },
+                        { println("onComplete") }
+                ).also {
+                    addDisposable(it)
+                }
+    }
+
+    private fun disposeActualDataLoading() {
+        loadActualDisposable?.let {
+            removeDisposable(it)
+            loadActualDisposable = null
+        }
+    }
+
+    private fun createTimestampState(timestamp: Int): LiveFragmentState.Timestamp {
+        return LiveFragmentState.Timestamp(ValueInterpreter.unixTimestampToMillis(timestamp), prefs.getString(PreferenceKey.TIME_FORMAT, Constants.DATETIME_FORMAT_DEFAULT))
+    }
+
+    private fun createTemperatureState(temperature: Float): LiveFragmentState.Temperature {
+        val unit = prefs.getByte(PreferenceKey.UNIT_TEMPERATURE, Constants.UNIT_FLAG_TEMPERATURE_CELSIUS)
+        var temp = temperature
+        val temperatureUnit = when (unit) {
+            Constants.UNIT_FLAG_TEMPERATURE_CELSIUS -> application.getString(R.string.celsius_unit_symbol)
+            Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT -> {
+                temp = ValueInterpreter.celsiusToFahrenheit(temperature)
+                application.getString(R.string.fahrenheit_Unit_symbol)
+            }
+            else -> ""
+        }
+
+        return LiveFragmentState.Temperature(temp, temperatureUnit)
+    }
+
+    private fun createHumidityState(humidity: Float): LiveFragmentState.Humidity {
+        return LiveFragmentState.Humidity(humidity, application.getString(R.string.humidity_unit_symbol))
+    }
+
+    fun getLiveFragmentState(): LiveData<LiveFragmentState> = liveFragmentState
+
+    fun getActualTimestamp(): LiveData<LiveFragmentState.Timestamp> = actualTimestamp
+    fun getActualTemperature(): LiveData<LiveFragmentState.Temperature> = actualTemperature
+    fun getActualHumidity(): LiveData<LiveFragmentState.Humidity> = actualHumidity
 }

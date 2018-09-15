@@ -4,7 +4,7 @@ import android.arch.persistence.room.Room
 import android.content.Context
 import dagger.Module
 import dagger.Provides
-import sk.kotlin.Constants
+import sk.kotlin.sensebox.Constants
 import sk.kotlin.sensebox.bl.db.Database
 import sk.kotlin.sensebox.bl.db.daos.FileDao
 import sk.kotlin.sensebox.bl.db.daos.RecordDao

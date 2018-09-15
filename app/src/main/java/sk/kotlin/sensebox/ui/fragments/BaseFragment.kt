@@ -32,9 +32,7 @@ abstract class BaseFragment<V : BaseViewModel> : Fragment(), Injectable {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         viewBinding = DataBindingUtil.inflate(inflater, setLayout(), container, false)
-        return viewBinding?.let {
-            it.root
-        } ?: container?.inflate(setLayout())
+        return viewBinding?.root ?: container?.inflate(setLayout())
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -42,6 +40,7 @@ abstract class BaseFragment<V : BaseViewModel> : Fragment(), Injectable {
         viewModel = setViewModel()?.also {
             it.onViewCreated(savedInstanceState)
         }
+        viewBinding?.setLifecycleOwner(activity)
         initViews(savedInstanceState)
     }
 
