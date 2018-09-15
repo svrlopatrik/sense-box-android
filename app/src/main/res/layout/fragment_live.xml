@@ -5,6 +5,7 @@
 
     <data>
 
+        <import type="android.view.View" />
         <import type="sk.kotlin.sensebox.utils.ValueInterpreter" />
 
         <variable
@@ -24,9 +25,22 @@
             android:layout_marginStart="32dp"
             android:layout_marginTop="32dp"
             android:text="@string/refresh"
+            android:enabled="@{!viewModel.isReading}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/android:progressBarStyleSmall"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:translationZ="2dp"
+            android:visibility="@{viewModel.isReading ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintBottom_toBottomOf="@+id/button_refresh"
+            app:layout_constraintEnd_toEndOf="@+id/button_refresh"
+            app:layout_constraintStart_toStartOf="@+id/button_refresh"
+            app:layout_constraintTop_toTopOf="@+id/button_refresh" />
 
         <TextView
             android:id="@+id/text_last_refresh"

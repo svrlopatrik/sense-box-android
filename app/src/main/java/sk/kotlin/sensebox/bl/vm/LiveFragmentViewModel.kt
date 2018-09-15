@@ -34,6 +34,8 @@ class LiveFragmentViewModel @Inject constructor(
     private val actualTemperature = SingleLiveEvent<LiveFragmentState.Temperature>()
     private val actualHumidity = SingleLiveEvent<LiveFragmentState.Humidity>()
 
+    private val isReading = MutableLiveData<Boolean>()
+
     private var loadActualDisposable: Disposable? = null
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
@@ -79,6 +81,8 @@ class LiveFragmentViewModel @Inject constructor(
                         else -> Flowable.fromCallable { it }
                     }
                 }
+                .doOnSubscribe { isReading.postValue(true) }
+                .doFinally { isReading.postValue(false) }
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(
                         {
@@ -155,4 +159,6 @@ class LiveFragmentViewModel @Inject constructor(
     fun getActualTimestamp(): LiveData<LiveFragmentState.Timestamp> = actualTimestamp
     fun getActualTemperature(): LiveData<LiveFragmentState.Temperature> = actualTemperature
     fun getActualHumidity(): LiveData<LiveFragmentState.Humidity> = actualHumidity
+
+    fun getIsReading(): LiveData<Boolean> = isReading
 }
