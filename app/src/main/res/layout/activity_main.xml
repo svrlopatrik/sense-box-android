@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
+        <variable
+            name="activity"
+            type="sk.kotlin.sensebox.ui.activities.main.MainActivity" />
     </data>
 
     <android.support.constraint.ConstraintLayout
@@ -31,11 +35,13 @@
             android:paddingTop="5dp"
             android:paddingStart="5dp"
             android:paddingBottom="5dp"
-            android:src="@drawable/ic_bluetooth_disconnected"
-            android:tint="@color/cc_rd_800"
+            bind:source="@{activity.bleStateImageSrc}"
+            bind:tintColor="@{activity.bleStateImageTintColor}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:background="@drawable/background_main_ble_state" />
+            android:background="@drawable/background_main_ble_state"
+            tools:src="@drawable/ic_bluetooth_disconnected"
+            tools:tint="@color/cc_rd_800" />
 
         <android.support.design.widget.BottomNavigationView
             android:id="@+id/bottom_navigation"
