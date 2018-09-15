@@ -7,6 +7,7 @@ import sk.kotlin.sensebox.Constants
 import sk.kotlin.sensebox.SenseBoxApp
 import sk.kotlin.sensebox.bl.PreferencesManager
 import sk.kotlin.sensebox.di.ApplicationScope
+import sk.kotlin.sensebox.events.RxBus
 
 /**
  * Created by Patrik Švrlo on 8.9.2018.
@@ -25,4 +26,8 @@ class AppModule(private val senseBoxApp: SenseBoxApp) {
     @Provides
     @ApplicationScope
     fun providesPreferencesManager(context: Context) = PreferencesManager(context, Constants.PREFERENCES_NAME)
+
+    @Provides
+    @ApplicationScope
+    fun providesRxBus() = RxBus
 }
