@@ -15,6 +15,8 @@ import sk.kotlin.sensebox.bl.PreferencesManager
 import sk.kotlin.sensebox.bl.PreferencesManager.PreferenceKey
 import sk.kotlin.sensebox.bl.bt.BleClient
 import sk.kotlin.sensebox.bl.bt.BleResult
+import sk.kotlin.sensebox.events.BleConnectionEvent
+import sk.kotlin.sensebox.events.RxBus
 import sk.kotlin.sensebox.models.states.LiveFragmentState
 import sk.kotlin.sensebox.utils.SingleLiveEvent
 import sk.kotlin.sensebox.utils.ValueInterpreter
@@ -26,7 +28,8 @@ import javax.inject.Inject
 class LiveFragmentViewModel @Inject constructor(
         private val application: SenseBoxApp,
         private val bleClient: BleClient,
-        private val prefs: PreferencesManager
+        private val prefs: PreferencesManager,
+        private val rxBus: RxBus
 ) : BaseViewModel() {
     private val liveFragmentState = MutableLiveData<LiveFragmentState>()
 
@@ -71,7 +74,10 @@ class LiveFragmentViewModel @Inject constructor(
                 .flatMap {
                     when (it) {
                         is BleResult.Connected -> bleClient.writeCharacteristic(Constants.BLE_UUID_SERVICE, Constants.BLE_UUID_CHARACTERISTIC, Constants.REQUEST_CODE_ACTUAL)
-                        else -> Single.fromCallable { it }
+                        else -> Single.fromCallable {
+                            rxBus.post(BleConnectionEvent(false))
+                            it
+                        }
                     }
                 }
                 .toFlowable()
@@ -81,7 +87,12 @@ class LiveFragmentViewModel @Inject constructor(
                         else -> Flowable.fromCallable { it }
                     }
                 }
-                .doOnSubscribe { isReading.postValue(true) }
+                .doOnSubscribe {
+                    if (!bleClient.isConnected()) {
+                        rxBus.post(BleConnectionEvent(true))
+                    }
+                    isReading.postValue(true)
+                }
                 .doFinally { isReading.postValue(false) }
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(

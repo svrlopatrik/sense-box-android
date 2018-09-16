@@ -6,6 +6,8 @@ import android.bluetooth.BluetoothProfile
 import android.os.Bundle
 import io.reactivex.schedulers.Schedulers
 import sk.kotlin.sensebox.bl.bt.BleClient
+import sk.kotlin.sensebox.events.BleConnectionEvent
+import sk.kotlin.sensebox.events.RxBus
 import sk.kotlin.sensebox.models.states.MainActivityState
 import javax.inject.Inject
 
@@ -13,7 +15,8 @@ import javax.inject.Inject
  * Created by Patrik Švrlo on 8.9.2018.
  */
 class MainActivityViewModel @Inject constructor(
-        private val bleClient: BleClient
+        private val bleClient: BleClient,
+        private val rxBus: RxBus
 ) : BaseViewModel() {
 
     private val mainActivityState = MutableLiveData<MainActivityState>()
@@ -34,6 +37,15 @@ class MainActivityViewModel @Inject constructor(
                             },
                             { mainActivityState.postValue(MainActivityState.Error(it)) }
                     )
+            )
+
+            addDisposable(rxBus.ofType(BleConnectionEvent::class.java)
+                    .subscribe {
+                        when (it.isConnecting) {
+                            true -> mainActivityState.postValue(MainActivityState.BleConnecting)
+                            false -> mainActivityState.postValue(MainActivityState.BleDisconnected)
+                        }
+                    }
             )
         }
     }
