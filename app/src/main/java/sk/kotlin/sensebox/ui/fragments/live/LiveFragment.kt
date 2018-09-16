@@ -4,7 +4,6 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.widget.Toast
-import kotlinx.android.synthetic.main.fragment_live.*
 import sk.kotlin.sensebox.BR
 import sk.kotlin.sensebox.R
 import sk.kotlin.sensebox.bl.vm.LiveFragmentViewModel
@@ -32,7 +31,6 @@ class LiveFragment : BaseFragment<LiveFragmentViewModel>() {
         }
 
         observeState()
-        initRefreshButton()
     }
 
     private fun observeState() {
@@ -48,12 +46,4 @@ class LiveFragment : BaseFragment<LiveFragmentViewModel>() {
             }
         }
     }
-
-    private fun initRefreshButton() {
-        button_refresh.setOnClickListener {
-            viewModel?.refreshActualData()
-        }
-    }
-
-
 }

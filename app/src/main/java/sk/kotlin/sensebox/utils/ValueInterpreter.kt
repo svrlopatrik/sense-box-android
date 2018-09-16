@@ -33,19 +33,21 @@ object ValueInterpreter {
         return byteBuffer.short
     }
 
+    @JvmStatic
     fun unixTimestampToMillis(timestamp: Int): Long {
         return timestamp * 1000L
     }
 
+    @JvmStatic
     fun celsiusToFahrenheit(value: Float): Float {
         return (value * 9 / 5) + 32
     }
 
     @JvmStatic
-    fun millisToFormattedDate(millis: Long, format: String? = Constants.DATE_FORMAT_DEFAULT): String {
+    fun millisToFormattedDate(millis: Long, format: String? = Constants.DATE_FORMAT_DEFAULT, timezone: String = TimeZone.getDefault().id): String {
         return if (millis != 0L && format?.isNotBlank() == true) {
             SimpleDateFormat(format).run {
-                timeZone = TimeZone.getTimeZone("UTC")
+                timeZone = TimeZone.getTimeZone(timezone)
                 this.format(Date(millis))
             }
         } else {
@@ -58,11 +60,16 @@ object ValueInterpreter {
         return String.format("%.${decimals}f", value)
     }
 
+    @JvmStatic
     fun rawDateToCalendar(rawDate: Int): Calendar {
         return Calendar.getInstance().apply {
-            timeZone = TimeZone.getTimeZone("UTC")
             time = rawDateFormatter.parse(rawDate.toString())
         }
+    }
+
+    @JvmStatic
+    fun rawDateToFormattedDate(rawDate: Int, format: String? = Constants.DATE_FORMAT_DEFAULT): String {
+        return millisToFormattedDate(rawDateToCalendar(rawDate).timeInMillis, format)
     }
 
 }

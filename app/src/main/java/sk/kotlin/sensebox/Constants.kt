@@ -37,9 +37,11 @@ object Constants {
 
     val ENABLE_NOTIFICATIONS_INDICATIONS = byteArrayOf(0x03, 0x00)
 
+    const val TIMEZONE_RTC_MODULE = "UTC"
+
     const val DATE_FORMAT_RAW = "yyyyMMdd"
-    const val DATE_FORMAT_DEFAULT = "dd.MMM.yyyy"
+    const val DATE_FORMAT_DEFAULT = "dd. MMMM yyyy"
     const val TIME_FORMAT_DEFAULT = "HH:mm:ss"
-    const val DATETIME_FORMAT_DEFAULT = "dd.MMM.yyyy HH:mm:ss"
+    const val DATETIME_FORMAT_DEFAULT = "dd.MMMM yyyy HH:mm:ss"
 
 }
