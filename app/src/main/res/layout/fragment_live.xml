@@ -31,7 +31,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <ProgressBar
-            android:id="@+id/progressBar"
+            android:id="@+id/progress_loading"
             style="?android:attr/android:progressBarStyleSmall"
             android:layout_width="30dp"
             android:layout_height="30dp"

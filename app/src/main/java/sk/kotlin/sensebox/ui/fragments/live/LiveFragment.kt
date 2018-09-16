@@ -51,7 +51,7 @@ class LiveFragment : BaseFragment<LiveFragmentViewModel>() {
 
     private fun initRefreshButton() {
         button_refresh.setOnClickListener {
-            viewModel?.loadActualData()
+            viewModel?.refreshActualData()
         }
     }
 

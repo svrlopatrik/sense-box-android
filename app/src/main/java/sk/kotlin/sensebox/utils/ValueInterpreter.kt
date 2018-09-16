@@ -60,6 +60,7 @@ object ValueInterpreter {
 
     fun rawDateToCalendar(rawDate: Int): Calendar {
         return Calendar.getInstance().apply {
+            timeZone = TimeZone.getTimeZone("UTC")
             time = rawDateFormatter.parse(rawDate.toString())
         }
     }
