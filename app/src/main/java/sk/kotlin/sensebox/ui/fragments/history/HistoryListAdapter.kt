@@ -1,11 +1,13 @@
 package sk.kotlin.sensebox.ui.fragments.history
 
 import android.content.Context
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import sk.kotlin.sensebox.R
+import sk.kotlin.sensebox.bl.db.entities.File
 import sk.kotlin.sensebox.databinding.ItemHistoryListBinding
-import sk.kotlin.sensebox.models.HistoryListItem
 
 
 /**
@@ -13,13 +15,14 @@ import sk.kotlin.sensebox.models.HistoryListItem
  */
 class HistoryListAdapter(
         private val context: Context,
-        private val onItemClickCallback: (HistoryListItem) -> Unit
+        private val onItemClickCallback: (File) -> Unit
 ) : RecyclerView.Adapter<HistoryListAdapter.ViewHolder>() {
 
-    private var data: List<HistoryListItem> = emptyList()
+    private var data: List<File> = emptyList()
 
-    fun setData(data: List<HistoryListItem>) {
-
+    fun setData(data: List<File>) {
+        this.data = data
+        notifyDataSetChanged()
     }
 
     override fun getItemCount() = data.size
@@ -33,8 +36,17 @@ class HistoryListAdapter(
     }
 
     inner class ViewHolder(private val viewBinding: ItemHistoryListBinding) : RecyclerView.ViewHolder(viewBinding.root) {
-        fun bind(item: HistoryListItem) {
+        fun bind(item: File) {
             viewBinding.item = item
+            viewBinding.imageState.apply {
+                if (!item.isDownloaded) {
+                    setImageResource(R.drawable.ic_file_download)
+                    setColorFilter(ContextCompat.getColor(context, R.color.cc_gn_800), android.graphics.PorterDuff.Mode.SRC_IN)
+                } else if (!item.isUpdated) {
+                    setImageResource(R.drawable.ic_loop)
+                    setColorFilter(ContextCompat.getColor(context, R.color.cc_yw_800), android.graphics.PorterDuff.Mode.SRC_IN)
+                }
+            }
             viewBinding.executePendingBindings()
 
             viewBinding.root.setOnClickListener { onItemClickCallback(item) }

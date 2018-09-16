@@ -3,7 +3,7 @@ package sk.kotlin.sensebox.bl.db.daos
 import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Query
 import io.reactivex.Flowable
-import io.reactivex.Single
+import io.reactivex.Maybe
 import sk.kotlin.sensebox.bl.db.entities.BaseEntity
 import sk.kotlin.sensebox.bl.db.entities.File
 
@@ -14,9 +14,11 @@ import sk.kotlin.sensebox.bl.db.entities.File
 abstract class FileDao : BaseDao<File> {
 
     @Query("SELECT * FROM `${File.TABLE_NAME}` WHERE `${BaseEntity.COLUMN_ID}` = :id")
-    abstract fun getById(id: String): Single<File>
+    abstract fun getById(id: String): Maybe<File>
 
-    @Query("SELECT * FROM `${File.TABLE_NAME}`")
-    abstract fun getAll(): Flowable<List<File>>
+    @Query("SELECT * FROM `${File.TABLE_NAME}` ORDER BY `${BaseEntity.COLUMN_ID}` DESC")
+    abstract fun getAllLive(): Flowable<List<File>>
+
+    fun getAll(): Flowable<List<File>> = getAllLive().take(1)
 
 }

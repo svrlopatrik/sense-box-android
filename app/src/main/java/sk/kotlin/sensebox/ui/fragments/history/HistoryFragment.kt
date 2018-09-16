@@ -1,12 +1,16 @@
 package sk.kotlin.sensebox.ui.fragments.history
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_history.*
+import sk.kotlin.sensebox.BR
 import sk.kotlin.sensebox.R
+import sk.kotlin.sensebox.bl.db.entities.File
 import sk.kotlin.sensebox.bl.vm.HistoryFragmentViewModel
-import sk.kotlin.sensebox.models.HistoryListItem
+import sk.kotlin.sensebox.models.states.HistoryFragmentState
 import sk.kotlin.sensebox.ui.fragments.BaseFragment
 
 /**
@@ -27,7 +31,31 @@ class HistoryFragment : BaseFragment<HistoryFragmentViewModel>() {
     override fun setViewModel() = ViewModelProviders.of(this, viewModelFactory).get(HistoryFragmentViewModel::class.java)
 
     override fun initViews(savedInstanceState: Bundle?) {
+        viewBinding?.apply {
+            setVariable(BR.viewModel, viewModel)
+        }
+
+        observeState()
         initList()
+    }
+
+    private fun observeState() {
+        viewModel?.let { viewModel ->
+            viewModel.getHistoryFragmentState().observe(this, Observer { state -> state?.let { render(it) } })
+        }
+    }
+
+    private fun render(state: HistoryFragmentState) {
+        when (state) {
+            is HistoryFragmentState.LocalData -> {
+                historyListAdapter.setData(state.data)
+            }
+            is HistoryFragmentState.New -> {
+            }
+            is HistoryFragmentState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun initList() {
@@ -42,7 +70,7 @@ class HistoryFragment : BaseFragment<HistoryFragmentViewModel>() {
         }
     }
 
-    private fun onHistoryItemClick(item: HistoryListItem) {
+    private fun onHistoryItemClick(item: File) {
 
     }
 }

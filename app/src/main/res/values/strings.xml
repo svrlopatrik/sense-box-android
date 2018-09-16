@@ -15,6 +15,9 @@
     <string name="list_no_items">There are no items in the list.</string>
     <string name="temperature_unit">Temperature unit:</string>
     <string name="permissions_rationale">The application requires permissions for bluetooth smart communication.</string>
+    <string name="average_temperature">Average temperature:</string>
+    <string name="num_of_measurements">Number of measurements:</string>
+    <string name="average_humidity">Average humidity:</string>
 
 
 </resources>
