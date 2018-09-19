@@ -17,6 +17,7 @@ import sk.kotlin.sensebox.models.states.MainActivityState
 import sk.kotlin.sensebox.ui.activities.BaseActivity
 import sk.kotlin.sensebox.ui.fragments.history.HistoryFragment
 import sk.kotlin.sensebox.ui.fragments.live.LiveFragment
+import sk.kotlin.sensebox.ui.fragments.notification.NotificationFragment
 import sk.kotlin.sensebox.ui.fragments.settings.SettingsFragment
 
 /**
@@ -75,8 +76,23 @@ class MainActivity : BaseActivity<MainActivityViewModel>(MainActivityViewModel::
                 bleStateImageTintColor.set(R.color.cc_rd_800)
             }
             is MainActivityState.Error -> {
-
+                state.message?.let { showNotification(it) }
             }
+        }
+    }
+
+    private fun showNotification(message: String) {
+        supportFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.slide_in_top, 0, 0, R.anim.fade_out)
+                .replace(R.id.frame_container, NotificationFragment.getFragment(message), NotificationFragment::class.java.simpleName)
+                .addToBackStack(null)
+                .commit()
+    }
+
+    private fun hideNotification() {
+        val fragment = supportFragmentManager.findFragmentById(R.id.frame_container)
+        if (fragment != null && fragment is NotificationFragment) {
+            supportFragmentManager.popBackStack()
         }
     }
 
@@ -94,6 +110,8 @@ class MainActivity : BaseActivity<MainActivityViewModel>(MainActivityViewModel::
 
     private fun initBottomNavigation() {
         bottom_navigation.setOnNavigationItemSelectedListener { menuItem ->
+            hideNotification()
+
             when (menuItem.itemId) {
                 R.id.action_live -> view_pager.setCurrentItem(0, true)
                 R.id.action_history -> view_pager.setCurrentItem(1, true)

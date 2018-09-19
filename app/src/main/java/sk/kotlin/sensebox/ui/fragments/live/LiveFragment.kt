@@ -3,7 +3,6 @@ package sk.kotlin.sensebox.ui.fragments.live
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.widget.Toast
 import sk.kotlin.sensebox.BR
 import sk.kotlin.sensebox.R
 import sk.kotlin.sensebox.bl.vm.LiveFragmentViewModel
@@ -40,10 +39,6 @@ class LiveFragment : BaseFragment<LiveFragmentViewModel>() {
     }
 
     private fun render(state: LiveFragmentState) {
-        when (state) {
-            is LiveFragmentState.Error -> {
-                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
-            }
-        }
+        //not used for now
     }
 }
