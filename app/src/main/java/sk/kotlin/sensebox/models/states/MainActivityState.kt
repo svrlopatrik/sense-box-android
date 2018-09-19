@@ -8,5 +8,5 @@ sealed class MainActivityState {
     object BleConnected : MainActivityState()
     object BleDisconnecting : MainActivityState()
     object BleDisconnected : MainActivityState()
-    data class Error(val throwable: Throwable) : MainActivityState()
+    data class Error(val message: String?) : MainActivityState()
 }

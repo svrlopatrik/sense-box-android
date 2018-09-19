@@ -15,6 +15,7 @@ import sk.kotlin.sensebox.bl.PreferencesManager.PreferenceKey
 import sk.kotlin.sensebox.bl.bt.BleClient
 import sk.kotlin.sensebox.bl.bt.BleResult
 import sk.kotlin.sensebox.events.BleConnectionEvent
+import sk.kotlin.sensebox.events.BleFailEvent
 import sk.kotlin.sensebox.events.RxBus
 import sk.kotlin.sensebox.models.states.LiveFragmentState
 import sk.kotlin.sensebox.utils.SingleLiveEvent
@@ -124,6 +125,7 @@ class LiveFragmentViewModel @Inject constructor(
                                 }
                                 is BleResult.Failure -> {
                                     liveFragmentState.postValue(LiveFragmentState.Error(it.bleFailState.name))
+                                    rxBus.post(BleFailEvent(it.bleFailState.name))
                                 }
                             }
                         },

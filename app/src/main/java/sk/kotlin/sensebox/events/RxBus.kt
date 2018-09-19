@@ -1,18 +1,18 @@
 package sk.kotlin.sensebox.events
 
-import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.Flowable
+import io.reactivex.processors.PublishProcessor
 
 /**
  * Created by Patrik Švrlo on 15.9.2018.
  */
 object RxBus {
 
-    private val publishSubject = PublishSubject.create<BaseEvent>()
+    private val publishProcessor = PublishProcessor.create<BaseEvent>()
 
     fun <E : BaseEvent> post(event: E) {
-        publishSubject.onNext(event)
+        publishProcessor.onNext(event)
     }
 
-    fun <E : BaseEvent> ofType(clazz: Class<E>): Observable<E> = publishSubject.ofType(clazz)
+    fun <E : BaseEvent> ofType(clazz: Class<E>): Flowable<E> = publishProcessor.ofType(clazz)
 }

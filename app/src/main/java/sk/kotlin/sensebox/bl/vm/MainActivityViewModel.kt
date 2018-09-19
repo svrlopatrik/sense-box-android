@@ -7,6 +7,7 @@ import android.os.Bundle
 import io.reactivex.schedulers.Schedulers
 import sk.kotlin.sensebox.bl.bt.BleClient
 import sk.kotlin.sensebox.events.BleConnectionEvent
+import sk.kotlin.sensebox.events.BleFailEvent
 import sk.kotlin.sensebox.events.RxBus
 import sk.kotlin.sensebox.models.states.MainActivityState
 import javax.inject.Inject
@@ -32,10 +33,10 @@ class MainActivityViewModel @Inject constructor(
                                     BluetoothProfile.STATE_CONNECTED -> MainActivityState.BleConnected
                                     BluetoothProfile.STATE_DISCONNECTING -> MainActivityState.BleDisconnecting
                                     BluetoothProfile.STATE_DISCONNECTED -> MainActivityState.BleDisconnected
-                                    else -> MainActivityState.Error(Throwable("Unknown ble state"))
+                                    else -> throw Exception("unknown state")
                                 })
                             },
-                            { mainActivityState.postValue(MainActivityState.Error(it)) }
+                            { mainActivityState.postValue(MainActivityState.Error(it.message)) }
                     )
             )
 
@@ -47,6 +48,8 @@ class MainActivityViewModel @Inject constructor(
                         }
                     }
             )
+
+            addDisposable(rxBus.ofType(BleFailEvent::class.java).subscribe { mainActivityState.postValue(MainActivityState.Error(it.message)) })
         }
     }
 

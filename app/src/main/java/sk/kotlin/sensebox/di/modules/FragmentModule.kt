@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import sk.kotlin.sensebox.ui.fragments.history.HistoryFragment
 import sk.kotlin.sensebox.ui.fragments.history_detail.HistoryDetailFragment
 import sk.kotlin.sensebox.ui.fragments.live.LiveFragment
+import sk.kotlin.sensebox.ui.fragments.notification.NotificationFragment
 import sk.kotlin.sensebox.ui.fragments.settings.SettingsFragment
 
 /**
@@ -24,4 +25,7 @@ abstract class FragmentModule {
 
     @ContributesAndroidInjector
     abstract fun contributeSettingsFragment(): SettingsFragment
+
+    @ContributesAndroidInjector
+    abstract fun contributeNotificationFragment(): NotificationFragment
 }
