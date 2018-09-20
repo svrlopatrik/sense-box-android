@@ -14,6 +14,7 @@ import sk.kotlin.sensebox.bl.bt.BleResult
 import sk.kotlin.sensebox.bl.db.daos.FileDao
 import sk.kotlin.sensebox.bl.db.entities.File
 import sk.kotlin.sensebox.events.BleConnectionEvent
+import sk.kotlin.sensebox.events.BleFailEvent
 import sk.kotlin.sensebox.events.RxBus
 import sk.kotlin.sensebox.models.states.HistoryFragmentState
 import sk.kotlin.sensebox.utils.SingleLiveEvent
@@ -30,7 +31,6 @@ class HistoryFragmentViewModel @Inject constructor(
         private val rxBus: RxBus
 ) : BaseViewModel() {
     private val historyFragmentState = SingleLiveEvent<HistoryFragmentState>()
-
     private val isReading = SingleLiveEvent<Boolean>()
 
     private var refreshHistoryListDisposable: Disposable? = null
@@ -76,6 +76,7 @@ class HistoryFragmentViewModel @Inject constructor(
                         is BleResult.Success -> processData(it)
                         is BleResult.Failure -> {
                             historyFragmentState.postValue(HistoryFragmentState.Error(it.bleFailState.name))
+                            rxBus.post(BleFailEvent(it.bleFailState.name))
                             Maybe.empty()
                         }
                         else -> Maybe.empty()

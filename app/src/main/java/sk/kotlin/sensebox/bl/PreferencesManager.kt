@@ -3,63 +3,102 @@ package sk.kotlin.sensebox.bl
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import sk.kotlin.sensebox.Constants
 
 /**
  * Created by Patrik Švrlo on 15.9.2018.
  */
 @SuppressLint("ApplySharedPref")
-class PreferencesManager(
-        private val context: Context,
-        private val name: String) {
+class PreferencesManager(context: Context, name: String) {
 
-    private var preferences: SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+    companion object {
+        private lateinit var preferencesMap: MutableMap<PreferenceKey, Any?>
 
-    fun exists(key: PreferenceKey): Boolean {
-        return preferences.contains(key.name)
+        private fun loadPreferences(sharedPreferences: SharedPreferences) {
+            val preferencesMap: MutableMap<PreferenceKey, Any?> = emptyMap<PreferenceKey, Any?>().toMutableMap()
+            for (preferenceKey in PreferenceKey.values()) {
+                preferencesMap[preferenceKey] = getValueByType(sharedPreferences, preferenceKey)
+            }
+
+            this.preferencesMap = preferencesMap
+        }
+
+        private fun updatePreference(sharedPreferences: SharedPreferences, key: String) {
+            val preferenceKey = PreferenceKey.valueOf(key)
+            preferencesMap[preferenceKey] = getValueByType(sharedPreferences, preferenceKey)
+        }
+
+        private fun getValueByType(sharedPreferences: SharedPreferences, enum: PreferenceKey): Any {
+            return when (enum.getDefault()) {
+                is Int -> {
+                    sharedPreferences.getInt(enum.name, enum.getDefault() as Int)
+                }
+                is Float -> {
+                    sharedPreferences.getFloat(enum.name, enum.getDefault() as Float)
+                }
+                is String -> {
+                    sharedPreferences.getString(enum.name, enum.getDefault() as String)
+                }
+                is Byte -> {
+                    sharedPreferences.getInt(enum.name, (enum.getDefault() as Byte).toInt()).toByte()
+                }
+                else -> {
+                    throw Exception("undefined type")
+                }
+            }
+        }
+
+        @JvmStatic
+        fun getStringValue(key: PreferenceKey) = preferencesMap[key] as String
+
+        @JvmStatic
+        fun getIntValue(key: PreferenceKey) = preferencesMap[key] as Int
+
+        @JvmStatic
+        fun getFloatValue(key: PreferenceKey) = preferencesMap[key] as Float
+
+        @JvmStatic
+        fun getByteValue(key: PreferenceKey) = preferencesMap[key] as Byte
     }
 
+    private var sharedPreferences: SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+
+    init {
+        loadPreferences(sharedPreferences)
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
+            updatePreference(sharedPreferences, key)
+        }
+    }
+
+    fun exists(key: PreferenceKey) = sharedPreferences.contains(key.name)
+
     fun removeAll() {
-        preferences.edit().clear().commit()
+        sharedPreferences.edit().clear().commit()
     }
 
     fun remove(key: PreferenceKey) {
-        preferences.edit().remove(key.name).commit()
-    }
-
-    fun getString(key: PreferenceKey, default: String = ""): String {
-        return preferences.getString(key.name, default)
-    }
-
-    fun getInt(key: PreferenceKey, default: Int = -1): Int {
-        return preferences.getInt(key.name, default)
-    }
-
-    fun getFloat(key: PreferenceKey, default: Float = -1f): Float {
-        return preferences.getFloat(key.name, default)
-    }
-
-    fun getByte(key: PreferenceKey, default: Byte = 0xFF.toByte()): Byte {
-        return preferences.getInt(key.name, default.toInt()).toByte()
+        sharedPreferences.edit().remove(key.name).commit()
     }
 
     fun storeString(key: PreferenceKey, value: String) {
-        preferences.edit().putString(key.name, value).commit()
+        sharedPreferences.edit().putString(key.name, value).commit()
     }
 
     fun storeInt(key: PreferenceKey, value: Int) {
-        preferences.edit().putInt(key.name, value).commit()
+        sharedPreferences.edit().putInt(key.name, value).commit()
     }
 
     fun storeFloat(key: PreferenceKey, value: Float) {
-        preferences.edit().putFloat(key.name, value).commit()
+        sharedPreferences.edit().putFloat(key.name, value).commit()
     }
 
     fun storeByte(key: PreferenceKey, value: Byte) {
-        preferences.edit().putInt(key.name, value.toInt()).commit()
+        sharedPreferences.edit().putInt(key.name, value.toInt()).commit()
     }
 
     inner class Builder {
-        private var editor: SharedPreferences.Editor = preferences.edit()
+        private var editor: SharedPreferences.Editor = sharedPreferences.edit()
 
         fun setString(key: PreferenceKey, value: String): Builder {
             editor.putString(key.name, value)
@@ -86,12 +125,18 @@ class PreferencesManager(
         }
     }
 
-    enum class PreferenceKey {
-        LAST_ACTUAL_TIMESTAMP,
-        LAST_ACTUAL_TEMPERATURE,
-        LAST_ACTUAL_HUMIDITY,
-        UNIT_TEMPERATURE,
-        TIME_FORMAT
+    enum class PreferenceKey(private var default: Any) {
+
+        LAST_ACTUAL_TIMESTAMP(0),
+        LAST_ACTUAL_TEMPERATURE(0f),
+        LAST_ACTUAL_HUMIDITY(0f),
+        TEMPERATURE_UNIT(Constants.UNIT_FLAG_TEMPERATURE_CELSIUS),
+        TEMPERATURE_SYMBOL("°C"),
+        DATE_FORMAT(Constants.DATE_FORMAT_DEFAULT),
+        TIME_FORMAT(Constants.TIME_FORMAT_DEFAULT),
+        DATETIME_FORMAT(Constants.DATETIME_FORMAT_DEFAULT);
+
+        fun getDefault() = default
     }
 
 }

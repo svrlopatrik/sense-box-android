@@ -19,6 +19,10 @@ abstract class FileDao : BaseDao<File> {
     @Query("SELECT * FROM `${File.TABLE_NAME}` ORDER BY `${BaseEntity.COLUMN_ID}` DESC")
     abstract fun getAllLive(): Flowable<List<File>>
 
+    @Query("SELECT * FROM `${File.TABLE_NAME}` ORDER BY `${BaseEntity.COLUMN_ID}` DESC LIMIT :offset, :count")
+    abstract fun getFromRangeLive(offset: Int, count: Int): Flowable<List<File>>
+
     fun getAll(): Flowable<List<File>> = getAllLive().take(1)
+    fun getFromRange(offset: Int, count: Int): Flowable<List<File>> = getFromRangeLive(offset, count)
 
 }

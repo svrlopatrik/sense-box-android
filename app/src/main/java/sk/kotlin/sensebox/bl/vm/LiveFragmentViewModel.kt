@@ -8,8 +8,6 @@ import io.reactivex.Single
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import sk.kotlin.sensebox.Constants
-import sk.kotlin.sensebox.R
-import sk.kotlin.sensebox.SenseBoxApp
 import sk.kotlin.sensebox.bl.PreferencesManager
 import sk.kotlin.sensebox.bl.PreferencesManager.PreferenceKey
 import sk.kotlin.sensebox.bl.bt.BleClient
@@ -26,7 +24,6 @@ import javax.inject.Inject
  * Created by Patrik Švrlo on 8.9.2018.
  */
 class LiveFragmentViewModel @Inject constructor(
-        private val application: SenseBoxApp,
         private val bleClient: BleClient,
         private val prefs: PreferencesManager,
         private val rxBus: RxBus
@@ -51,17 +48,17 @@ class LiveFragmentViewModel @Inject constructor(
         }
 
         if (prefs.exists(PreferenceKey.LAST_ACTUAL_TIMESTAMP)) {
-            val timestamp = prefs.getInt(PreferenceKey.LAST_ACTUAL_TIMESTAMP)
+            val timestamp = PreferencesManager.getIntValue(PreferenceKey.LAST_ACTUAL_TIMESTAMP)
             actualTimestamp.value = createTimestampState(timestamp)
         }
 
         if (prefs.exists(PreferenceKey.LAST_ACTUAL_TEMPERATURE)) {
-            val temperature = prefs.getFloat(PreferenceKey.LAST_ACTUAL_TEMPERATURE)
+            val temperature = PreferencesManager.getFloatValue(PreferenceKey.LAST_ACTUAL_TEMPERATURE)
             actualTemperature.value = createTemperatureState(temperature)
         }
 
         if (prefs.exists(PreferenceKey.LAST_ACTUAL_HUMIDITY)) {
-            val humidity = prefs.getFloat(PreferenceKey.LAST_ACTUAL_HUMIDITY)
+            val humidity = PreferencesManager.getFloatValue(PreferenceKey.LAST_ACTUAL_HUMIDITY)
             actualHumidity.value = createHumidityState(humidity)
         }
 
@@ -144,26 +141,21 @@ class LiveFragmentViewModel @Inject constructor(
     }
 
     private fun createTimestampState(timestamp: Int): LiveFragmentState.Timestamp {
-        return LiveFragmentState.Timestamp(ValueInterpreter.unixTimestampToMillis(timestamp), prefs.getString(PreferenceKey.TIME_FORMAT, Constants.DATETIME_FORMAT_DEFAULT))
+        return LiveFragmentState.Timestamp(ValueInterpreter.unixTimestampToMillis(timestamp))
     }
 
     private fun createTemperatureState(temperature: Float): LiveFragmentState.Temperature {
-        val unit = prefs.getByte(PreferenceKey.UNIT_TEMPERATURE, Constants.UNIT_FLAG_TEMPERATURE_CELSIUS)
+        val temperatureUnit = PreferencesManager.getByteValue(PreferenceKey.TEMPERATURE_UNIT)
         var temp = temperature
-        val temperatureUnit = when (unit) {
-            Constants.UNIT_FLAG_TEMPERATURE_CELSIUS -> application.getString(R.string.celsius_unit_symbol)
-            Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT -> {
-                temp = ValueInterpreter.celsiusToFahrenheit(temperature)
-                application.getString(R.string.fahrenheit_Unit_symbol)
-            }
-            else -> ""
+        if (temperatureUnit == Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT) {
+            temp = ValueInterpreter.celsiusToFahrenheit(temperature)
         }
 
-        return LiveFragmentState.Temperature(temp, temperatureUnit)
+        return LiveFragmentState.Temperature(temp)
     }
 
     private fun createHumidityState(humidity: Float): LiveFragmentState.Humidity {
-        return LiveFragmentState.Humidity(humidity, application.getString(R.string.humidity_unit_symbol))
+        return LiveFragmentState.Humidity(humidity)
     }
 
     fun getLiveFragmentState(): LiveData<LiveFragmentState> = liveFragmentState

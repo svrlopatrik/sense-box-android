@@ -4,7 +4,6 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
-import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_history.*
 import sk.kotlin.sensebox.BR
 import sk.kotlin.sensebox.R
@@ -53,7 +52,6 @@ class HistoryFragment : BaseFragment<HistoryFragmentViewModel>() {
             is HistoryFragmentState.New -> {
             }
             is HistoryFragmentState.Error -> {
-                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
             }
         }
     }

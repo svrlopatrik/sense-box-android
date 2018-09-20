@@ -4,10 +4,13 @@ import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.Ignore
 import android.arch.persistence.room.Index
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
 /**
  * Created by Patrik Švrlo on 15.9.2018.
  */
+@Parcelize
 @Entity(tableName = File.TABLE_NAME,
         indices = [Index(BaseEntity.COLUMN_ID)])
 data class File(
@@ -29,7 +32,7 @@ data class File(
         var isDownloaded: Boolean = false,
         @ColumnInfo(name = File.COLUMN_IS_UPDATED)
         var isUpdated: Boolean = false
-) : BaseEntity() {
+) : BaseEntity(), Parcelable {
 
     companion object {
         @Ignore

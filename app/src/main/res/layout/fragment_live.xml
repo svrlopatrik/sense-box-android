@@ -8,8 +8,6 @@
         <import type="android.view.View" />
         <import type="sk.kotlin.sensebox.utils.ValueInterpreter" />
 
-        <import type="sk.kotlin.sensebox.Constants" />
-
         <variable
             name="viewModel"
             type="sk.kotlin.sensebox.bl.vm.LiveFragmentViewModel" />
@@ -52,7 +50,7 @@
             android:layout_marginEnd="32dp"
             android:layout_marginStart="32dp"
             android:layout_marginTop="8dp"
-            android:text="@{@string/last_update(ValueInterpreter.millisToFormattedDate(viewModel.actualTimestamp.millis, viewModel.actualTimestamp.format, Constants.TIMEZONE_RTC_MODULE))}"
+            android:text="@{@string/last_update(ValueInterpreter.millisToUtcDatetime(viewModel.actualTimestamp.millis))}"
             android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -74,7 +72,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:text="@{ValueInterpreter.floatToString(viewModel.actualTemperature.value, 2) + ' ' + viewModel.actualTemperature.unit}"
+            android:text="@{ValueInterpreter.floatToFormattedTemperature(viewModel.actualTemperature.value)}"
             app:layout_constraintBaseline_toBaselineOf="@+id/text_title_temperature"
             app:layout_constraintStart_toEndOf="@+id/text_title_temperature"
             tools:text="21.10 °C" />
@@ -93,7 +91,7 @@
             android:id="@+id/text_value_humidity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{ValueInterpreter.floatToString(viewModel.actualHumidity.value, 2) + ' ' + viewModel.actualHumidity.unit}"
+            android:text="@{ValueInterpreter.floatToFormattedHumidity(viewModel.actualHumidity.value)}"
             app:layout_constraintBaseline_toBaselineOf="@+id/text_title_humidity"
             app:layout_constraintStart_toStartOf="@+id/text_value_temperature"
             tools:text="55.50 %" />

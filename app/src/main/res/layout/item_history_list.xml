@@ -4,9 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
-        <import type="sk.kotlin.sensebox.Constants" />
-
         <import type="sk.kotlin.sensebox.utils.ValueInterpreter" />
 
         <import type="android.view.View" />
@@ -21,7 +18,10 @@
         android:layout_margin="8dp"
         app:cardBackgroundColor="@color/cc_bg_100"
         app:cardCornerRadius="6dp"
-        app:cardElevation="3dp">
+        app:cardElevation="3dp"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
@@ -38,7 +38,7 @@
                 android:paddingTop="10dp"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                android:text='@{ValueInterpreter.rawDateToFormattedDate(Integer.valueOf(item.id), Constants.DATE_FORMAT_DEFAULT)}'
+                android:text='@{ValueInterpreter.rawDateToFormattedDate(Integer.valueOf(item.id))}'
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -110,7 +110,7 @@
                         android:layout_column="2"
                         android:layout_weight="1"
                         android:gravity="end"
-                        android:text="@{String.valueOf(item.averageTemperature)}"
+                        android:text="@{ValueInterpreter.floatToFormattedTemperature(item.averageTemperature)}"
                         tools:text="26.75 °C" />
 
                 </TableRow>
@@ -133,7 +133,7 @@
                         android:layout_column="2"
                         android:layout_weight="1"
                         android:gravity="end"
-                        android:text="@{String.valueOf(item.averageHumidity) + ' ' + @string/humidity_unit_symbol}"
+                        android:text="@{ValueInterpreter.floatToFormattedHumidity(item.averageTemperature)}"
                         tools:text="55.52 %" />
 
                 </TableRow>
