@@ -32,8 +32,8 @@ object Constants {
     const val RESPONSE_FLAG_TIMESTAMP = 0x00.toByte()
     const val RESPONSE_FLAG_TEMPERATURE = 0x01.toByte()
     const val RESPONSE_FLAG_HUMIDITY = 0x02.toByte()
-    const val RESPONSE_FLAG_END = "END"
-    const val RESPONSE_FLAG_UDEF = "UDEF"
+    val RESPONSE_FLAG_END = "END".toByteArray()
+    val RESPONSE_FLAG_UDEF = "UDEF".toByteArray()
 
     val ENABLE_NOTIFICATIONS_INDICATIONS = byteArrayOf(0x03, 0x00)
 

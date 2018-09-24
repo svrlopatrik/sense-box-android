@@ -49,9 +49,12 @@ class HistoryFragment : BaseFragment<HistoryFragmentViewModel>() {
             is HistoryFragmentState.LocalData -> {
                 historyListAdapter.setData(state.data)
             }
-            is HistoryFragmentState.New -> {
+            is HistoryFragmentState.NewData -> {
+                historyListAdapter.newData(state.data)
+                list_history.smoothScrollToPosition(0)
             }
             is HistoryFragmentState.Error -> {
+
             }
         }
     }

@@ -2,6 +2,7 @@ package sk.kotlin.sensebox.ui.fragments.history
 
 import android.content.Context
 import android.support.v4.content.ContextCompat
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,11 +19,21 @@ class HistoryListAdapter(
         private val onItemClickCallback: (File) -> Unit
 ) : RecyclerView.Adapter<HistoryListAdapter.ViewHolder>() {
 
-    private var data: List<File> = emptyList()
+    private var data: MutableList<File> = ArrayList()
 
     fun setData(data: List<File>) {
-        this.data = data
+        this.data.addAll(data)
         notifyDataSetChanged()
+    }
+
+    fun newData(data: List<File>) {
+        val diffCallback = HistoryListDiffCallback(this.data, data)
+        val diffResult = DiffUtil.calculateDiff(diffCallback, true)
+
+        this.data.clear()
+        this.data.addAll(data)
+
+        diffResult.dispatchUpdatesTo(this)
     }
 
     override fun getItemCount() = data.size

@@ -35,6 +35,8 @@ class HistoryFragmentViewModel @Inject constructor(
 
     private var refreshHistoryListDisposable: Disposable? = null
 
+    private var loadedFiles = mutableListOf<File>()
+
     override fun onViewCreated(savedInstanceState: Bundle?) {
         if (savedInstanceState == null) {
             addDisposable(bleClient.connectionState()
@@ -42,13 +44,17 @@ class HistoryFragmentViewModel @Inject constructor(
                     .subscribeOn(Schedulers.newThread())
                     .subscribe { disposeHistoryDataRefreshing() }
             )
-        }
 
-        addDisposable(
-                fileDao.getAll()
-                        .subscribeOn(Schedulers.newThread())
-                        .subscribe { historyFragmentState.postValue(HistoryFragmentState.LocalData(it)) }
-        )
+            addDisposable(fileDao.getAll()
+                    .subscribeOn(Schedulers.newThread())
+                    .subscribe {
+                        loadedFiles.addAll(it)
+                        historyFragmentState.postValue(HistoryFragmentState.LocalData(it))
+                    }
+            )
+        } else {
+            historyFragmentState.postValue(HistoryFragmentState.LocalData(loadedFiles))
+        }
     }
 
     fun refreshHistoryListData() {
@@ -82,6 +88,9 @@ class HistoryFragmentViewModel @Inject constructor(
                         else -> Maybe.empty()
                     }
                 }
+                .toList()
+                .toFlowable()
+                .flatMap { fileDao.getAll() }
                 .doOnSubscribe {
                     if (!bleClient.isConnected()) {
                         rxBus.post(BleConnectionEvent(true))
@@ -91,9 +100,14 @@ class HistoryFragmentViewModel @Inject constructor(
                 .doFinally { isReading.postValue(false) }
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(
-                        { historyFragmentState.postValue(HistoryFragmentState.New(it)) },
-                        { println("onError: ${it.message}") },
-                        { println("onComplete") }
+                        {
+                            if (it.isNotEmpty()) {
+                                loadedFiles.clear()
+                                loadedFiles.addAll(it)
+                                historyFragmentState.postValue(HistoryFragmentState.NewData(it))
+                            }
+                        },
+                        { println("onError: ${it.message}") }
                 )
                 .also {
                     addDisposable(it)

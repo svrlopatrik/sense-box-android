@@ -7,6 +7,6 @@ import sk.kotlin.sensebox.bl.db.entities.File
  */
 sealed class HistoryFragmentState {
     data class LocalData(val data: List<File>) : HistoryFragmentState()
-    data class New(val data: File) : HistoryFragmentState()
+    data class NewData(val data: List<File>) : HistoryFragmentState()
     data class Error(val message: String) : HistoryFragmentState()
 }

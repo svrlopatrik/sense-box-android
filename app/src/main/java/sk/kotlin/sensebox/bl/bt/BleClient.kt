@@ -300,10 +300,14 @@ class BleClient(val context: Context) {
                                         characteristicChangedListener = object : BleGattCallback.CharacteristicChangedListener {
                                             override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
                                                 characteristic?.let {
-                                                    emitter.onNext(BleResult.Success(it.value))
-
-                                                    if (it.value.contentEquals(Constants.RESPONSE_FLAG_END.toByteArray()) || it.value.contentEquals(Constants.RESPONSE_FLAG_UDEF.toByteArray())) {
-                                                        emitter.onComplete()
+                                                    val value = it.value
+                                                    when (value) {
+                                                        Constants.RESPONSE_FLAG_END -> emitter.onComplete()
+                                                        Constants.RESPONSE_FLAG_UDEF -> {
+                                                            emitter.onNext(BleResult.Failure(BleFailState.UNDEFINED_RESPONSE))
+                                                            emitter.onComplete()
+                                                        }
+                                                        else -> emitter.onNext(BleResult.Success(value))
                                                     }
                                                 }
                                             }
