@@ -9,7 +9,7 @@
     <string name="title_temperature">Temperature:</string>
     <string name="title_humidity">Humidity:</string>
     <string name="celsius_unit_symbol">°C</string>
-    <string name="fahrenheit_Unit_symbol">°F</string>
+    <string name="fahrenheit_unit_symbol">°F</string>
     <string name="humidity_unit_symbol">%</string>
     <string name="not_measured_symbol">___.__</string>
     <string name="list_no_items">There are no items in the list.</string>

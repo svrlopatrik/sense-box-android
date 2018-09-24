@@ -133,7 +133,7 @@
                         android:layout_column="2"
                         android:layout_weight="1"
                         android:gravity="end"
-                        android:text="@{ValueInterpreter.floatToFormattedHumidity(item.averageTemperature)}"
+                        android:text="@{ValueInterpreter.floatToFormattedHumidity(item.averageHumidity)}"
                         tools:text="55.52 %" />
 
                 </TableRow>
