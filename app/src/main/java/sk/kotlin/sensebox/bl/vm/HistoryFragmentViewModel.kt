@@ -9,6 +9,7 @@ import io.reactivex.Single
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import sk.kotlin.sensebox.Constants
+import sk.kotlin.sensebox.bl.PreferencesManager
 import sk.kotlin.sensebox.bl.bt.BleClient
 import sk.kotlin.sensebox.bl.bt.BleResult
 import sk.kotlin.sensebox.bl.db.daos.FileDao
@@ -45,12 +46,17 @@ class HistoryFragmentViewModel @Inject constructor(
                     .subscribe { disposeHistoryDataRefreshing() }
             )
 
-            addDisposable(fileDao.getAll()
+            addDisposable(loadFilesFromDb()
                     .subscribeOn(Schedulers.newThread())
-                    .subscribe {
-                        loadedFiles.addAll(it)
-                        historyFragmentState.postValue(HistoryFragmentState.LocalData(it))
-                    }
+                    .subscribe(
+                            {
+                                loadedFiles.addAll(it)
+                                historyFragmentState.postValue(HistoryFragmentState.LocalData(it))
+                            },
+                            {
+                                println("onError: ${it.message}")
+                            }
+                    )
             )
         } else {
             historyFragmentState.postValue(HistoryFragmentState.LocalData(loadedFiles))
@@ -89,8 +95,7 @@ class HistoryFragmentViewModel @Inject constructor(
                     }
                 }
                 .toList()
-                .toFlowable()
-                .flatMap { fileDao.getAll() }
+                .flatMap { loadFilesFromDb() }
                 .doOnSubscribe {
                     if (!bleClient.isConnected()) {
                         rxBus.post(BleConnectionEvent(true))
@@ -144,6 +149,22 @@ class HistoryFragmentViewModel @Inject constructor(
                         }
                     }
                 }
+    }
+
+    private fun loadFilesFromDb(): Single<List<File>> {
+        return fileDao.getAll()
+                .flatMapIterable { it }
+                .map { file ->
+                    if (PreferencesManager.getByteValue(PreferencesManager.PreferenceKey.TEMPERATURE_UNIT) == Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT) {
+                        file.apply {
+                            averageTemperature?.let {
+                                averageTemperature = ValueInterpreter.celsiusToFahrenheit(it)
+                            }
+                        }
+                    }
+                    file
+                }
+                .toList()
     }
 
     private fun disposeHistoryDataRefreshing() {
