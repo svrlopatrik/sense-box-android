@@ -301,14 +301,16 @@ class BleClient(val context: Context) {
                                             override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
                                                 characteristic?.let {
                                                     val value = it.value
-                                                    when (value) {
-                                                        Constants.RESPONSE_FLAG_END -> emitter.onComplete()
-                                                        Constants.RESPONSE_FLAG_UDEF -> {
-                                                            emitter.onNext(BleResult.Failure(BleFailState.UNDEFINED_RESPONSE))
-                                                            emitter.onComplete()
+                                                    value?.let {
+                                                        when {
+                                                            it.contentEquals(Constants.RESPONSE_FLAG_END) -> emitter.onComplete()
+                                                            it.contentEquals(Constants.RESPONSE_FLAG_UDEF) -> {
+                                                                emitter.onNext(BleResult.Failure(BleFailState.UNDEFINED_RESPONSE))
+                                                                emitter.onComplete()
+                                                            }
+                                                            else -> emitter.onNext(BleResult.Success(value))
                                                         }
-                                                        else -> emitter.onNext(BleResult.Success(value))
-                                                    }
+                                                    } ?: emitter.onComplete()
                                                 }
                                             }
                                         }

@@ -4,120 +4,138 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import java.util.concurrent.CopyOnWriteArrayList
 
 object BleGattCallback : BluetoothGattCallback() {
 
-    private val connectionChangeListeners = mutableListOf<ConnectionChangeListener>()
-    private val characteristicReadListeners = mutableListOf<CharacteristicReadListener>()
-    private val characteristicChangedListeners = mutableListOf<CharacteristicChangedListener>()
-    private val characteristicWriteListeners = mutableListOf<CharacteristicWriteListener>()
-    private val servicesDiscoveredListeners = mutableListOf<ServicesDiscoveredListener>()
-    private val descriptorWriteListeners = mutableListOf<DescriptorWriteListener>()
+    private val connectionChangeListeners = CopyOnWriteArrayList<ConnectionChangeListener>()
+    private val characteristicReadListeners = CopyOnWriteArrayList<CharacteristicReadListener>()
+    private val characteristicChangedListeners = CopyOnWriteArrayList<CharacteristicChangedListener>()
+    private val characteristicWriteListeners = CopyOnWriteArrayList<CharacteristicWriteListener>()
+    private val servicesDiscoveredListeners = CopyOnWriteArrayList<ServicesDiscoveredListener>()
+    private val descriptorWriteListeners = CopyOnWriteArrayList<DescriptorWriteListener>()
 
-    @Synchronized
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-        for (listener in connectionChangeListeners) {
-            listener.onConnectionStateChange(gatt, status, newState)
+        synchronized(connectionChangeListeners) {
+            for (listener in connectionChangeListeners) {
+                listener.onConnectionStateChange(gatt, status, newState)
+            }
         }
     }
 
-    @Synchronized
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
-        for (listener in characteristicReadListeners) {
-            listener.onCharacteristicRead(gatt, characteristic, status)
+        synchronized(characteristicReadListeners) {
+            for (listener in characteristicReadListeners) {
+                listener.onCharacteristicRead(gatt, characteristic, status)
+            }
         }
     }
 
-    @Synchronized
     override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
-        for (listener in characteristicChangedListeners) {
-            listener.onCharacteristicChanged(gatt, characteristic)
+        synchronized(characteristicChangedListeners) {
+            for (listener in characteristicChangedListeners) {
+                listener.onCharacteristicChanged(gatt, characteristic)
+            }
         }
     }
 
-    @Synchronized
     override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
-        for (listener in characteristicWriteListeners) {
-            listener.onCharacteristicWrite(gatt, characteristic, status)
+        synchronized(characteristicWriteListeners) {
+            for (listener in characteristicWriteListeners) {
+                listener.onCharacteristicWrite(gatt, characteristic, status)
+            }
         }
     }
 
-    @Synchronized
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-        for (listener in servicesDiscoveredListeners) {
-            listener.onServicesDiscovered(gatt, status)
+        synchronized(servicesDiscoveredListeners) {
+            for (listener in servicesDiscoveredListeners) {
+                listener.onServicesDiscovered(gatt, status)
+            }
         }
     }
 
-    @Synchronized
     override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
-        for (listener in descriptorWriteListeners) {
-            listener.onDescriptorWrite(gatt, descriptor, status)
+        synchronized(descriptorWriteListeners) {
+            for (listener in descriptorWriteListeners) {
+                listener.onDescriptorWrite(gatt, descriptor, status)
+            }
         }
 
     }
 
-    @Synchronized
     fun addConnectionChangeListener(connectionChangeListener: ConnectionChangeListener) {
-        connectionChangeListeners.add(connectionChangeListener)
+        synchronized(connectionChangeListeners) {
+            connectionChangeListeners.add(connectionChangeListener)
+        }
     }
 
-    @Synchronized
     fun addCharacteristicReadListener(characteristicReadListener: CharacteristicReadListener) {
-        characteristicReadListeners.add(characteristicReadListener)
+        synchronized(characteristicReadListeners) {
+            characteristicReadListeners.add(characteristicReadListener)
+        }
     }
 
-    @Synchronized
     fun addCharacteristicChangedListener(characteristicChangedListener: CharacteristicChangedListener) {
-        characteristicChangedListeners.add(characteristicChangedListener)
+        synchronized(characteristicChangedListeners) {
+            characteristicChangedListeners.add(characteristicChangedListener)
+        }
     }
 
-    @Synchronized
     fun addCharacteristicWriteListener(characteristicWriteListener: CharacteristicWriteListener) {
-        characteristicWriteListeners.add(characteristicWriteListener)
+        synchronized(characteristicWriteListeners) {
+            characteristicWriteListeners.add(characteristicWriteListener)
+        }
     }
 
-    @Synchronized
     fun addServicesDiscoveredListener(servicesDiscoveredListener: ServicesDiscoveredListener) {
-        servicesDiscoveredListeners.add(servicesDiscoveredListener)
+        synchronized(servicesDiscoveredListeners) {
+            servicesDiscoveredListeners.add(servicesDiscoveredListener)
+        }
     }
 
-    @Synchronized
     fun addDescriptorWriteListener(descriptorWriteListener: DescriptorWriteListener) {
-        descriptorWriteListeners.add(descriptorWriteListener)
+        synchronized(descriptorWriteListeners) {
+            descriptorWriteListeners.add(descriptorWriteListener)
+        }
     }
 
-    @Synchronized
     fun removeConnectionChangeListener(connectionChangeListener: ConnectionChangeListener) {
-        connectionChangeListeners.remove(connectionChangeListener)
+        synchronized(connectionChangeListeners) {
+            connectionChangeListeners.remove(connectionChangeListener)
+        }
     }
 
-    @Synchronized
     fun removeCharacteristicReadListener(characteristicReadListener: CharacteristicReadListener) {
-        characteristicReadListeners.remove(characteristicReadListener)
+        synchronized(characteristicReadListeners) {
+            characteristicReadListeners.remove(characteristicReadListener)
+        }
     }
 
-    @Synchronized
     fun removeCharacteristicChangedListener(characteristicChangedListener: CharacteristicChangedListener) {
-        characteristicChangedListeners.remove(characteristicChangedListener)
+        synchronized(characteristicChangedListeners) {
+            characteristicChangedListeners.remove(characteristicChangedListener)
+        }
     }
 
-    @Synchronized
     fun removeCharacteristicWriteListener(characteristicWriteListener: CharacteristicWriteListener) {
-        characteristicWriteListeners.remove(characteristicWriteListener)
+        synchronized(characteristicWriteListeners) {
+            characteristicWriteListeners.remove(characteristicWriteListener)
+        }
     }
 
-    @Synchronized
     fun removeServicesDiscoveredListener(servicesDiscoveredListener: ServicesDiscoveredListener) {
-        servicesDiscoveredListeners.remove(servicesDiscoveredListener)
+        synchronized(servicesDiscoveredListeners) {
+            servicesDiscoveredListeners.remove(servicesDiscoveredListener)
+        }
     }
 
-    @Synchronized
     fun removeDescriptorWriteListener(descriptorWriteListener: DescriptorWriteListener) {
-        descriptorWriteListeners.remove(descriptorWriteListener)
+        synchronized(descriptorWriteListeners) {
+            descriptorWriteListeners.remove(descriptorWriteListener)
+        }
     }
 
-    @Synchronized
     fun release() {
         connectionChangeListeners.clear()
         characteristicReadListeners.clear()

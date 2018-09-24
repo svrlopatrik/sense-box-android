@@ -27,6 +27,11 @@ class HistoryListAdapter(
     }
 
     fun newData(data: List<File>) {
+        if (this.data.isEmpty()) {
+            setData(data)
+            return  //diff calculation not needed
+        }
+
         val diffCallback = HistoryListDiffCallback(this.data, data)
         val diffResult = DiffUtil.calculateDiff(diffCallback, true)
 
