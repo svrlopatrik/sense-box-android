@@ -17,6 +17,7 @@ import sk.kotlin.sensebox.bl.db.entities.File
 import sk.kotlin.sensebox.events.BleConnectionEvent
 import sk.kotlin.sensebox.events.BleFailEvent
 import sk.kotlin.sensebox.events.RxBus
+import sk.kotlin.sensebox.events.SettingsChangedEvent
 import sk.kotlin.sensebox.models.states.HistoryFragmentState
 import sk.kotlin.sensebox.utils.SingleLiveEvent
 import sk.kotlin.sensebox.utils.ValueInterpreter
@@ -58,6 +59,10 @@ class HistoryFragmentViewModel @Inject constructor(
                             }
                     )
             )
+
+            addDisposable(rxBus.ofType(SettingsChangedEvent::class.java).subscribe {
+                historyFragmentState.postValue(HistoryFragmentState.Refresh)
+            })
         } else {
             historyFragmentState.postValue(HistoryFragmentState.LocalData(loadedFiles))
         }
