@@ -39,6 +39,8 @@ class LiveFragment : BaseFragment<LiveFragmentViewModel>() {
     }
 
     private fun render(state: LiveFragmentState) {
-        //not used for now
+        when (state) {
+            is LiveFragmentState.Refresh -> refresh()
+        }
     }
 }

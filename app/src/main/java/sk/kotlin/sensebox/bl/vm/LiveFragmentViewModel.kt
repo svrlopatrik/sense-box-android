@@ -15,6 +15,7 @@ import sk.kotlin.sensebox.bl.bt.BleResult
 import sk.kotlin.sensebox.events.BleConnectionEvent
 import sk.kotlin.sensebox.events.BleFailEvent
 import sk.kotlin.sensebox.events.RxBus
+import sk.kotlin.sensebox.events.SettingsChangedEvent
 import sk.kotlin.sensebox.models.states.LiveFragmentState
 import sk.kotlin.sensebox.utils.SingleLiveEvent
 import sk.kotlin.sensebox.utils.ValueInterpreter
@@ -45,6 +46,10 @@ class LiveFragmentViewModel @Inject constructor(
                     .subscribeOn(Schedulers.newThread())
                     .subscribe { disposeActualDataRefreshing() }
             )
+
+            addDisposable(rxBus.ofType(SettingsChangedEvent::class.java).subscribe {
+                liveFragmentState.postValue(LiveFragmentState.Refresh)
+            })
         }
 
         if (prefs.exists(PreferenceKey.LAST_ACTUAL_TIMESTAMP)) {

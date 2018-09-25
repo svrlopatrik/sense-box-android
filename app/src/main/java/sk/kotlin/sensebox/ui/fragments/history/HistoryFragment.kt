@@ -46,16 +46,15 @@ class HistoryFragment : BaseFragment<HistoryFragmentViewModel>() {
 
     private fun render(state: HistoryFragmentState) {
         when (state) {
-            is HistoryFragmentState.LocalData -> {
-                historyListAdapter.setData(state.data)
-            }
+            is HistoryFragmentState.LocalData -> historyListAdapter.setData(state.data)
             is HistoryFragmentState.NewData -> {
                 historyListAdapter.newData(state.data)
                 list_history.smoothScrollToPosition(0)
             }
             is HistoryFragmentState.Error -> {
-
             }
+            is HistoryFragmentState.Refresh -> refresh()
+
         }
     }
 

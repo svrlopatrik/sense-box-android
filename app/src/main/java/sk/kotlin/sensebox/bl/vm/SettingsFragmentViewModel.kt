@@ -5,7 +5,10 @@ import android.os.Bundle
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import sk.kotlin.sensebox.Constants
+import sk.kotlin.sensebox.R
 import sk.kotlin.sensebox.bl.PreferencesManager
+import sk.kotlin.sensebox.events.RxBus
+import sk.kotlin.sensebox.events.SettingsChangedEvent
 import sk.kotlin.sensebox.utils.SingleLiveEvent
 import javax.inject.Inject
 
@@ -13,7 +16,8 @@ import javax.inject.Inject
  * Created by Patrik Švrlo on 8.9.2018.
  */
 class SettingsFragmentViewModel @Inject constructor(
-        private val preferences: PreferencesManager
+        private val preferences: PreferencesManager,
+        private val rxBus: RxBus
 ) : BaseViewModel() {
 
     private val temperatureUnit = SingleLiveEvent<String>()
@@ -28,14 +32,15 @@ class SettingsFragmentViewModel @Inject constructor(
             temperatureUnit.value = text
             preferences.Builder()
                     .setString(PreferencesManager.PreferenceKey.TEMPERATURE_SYMBOL, text)
-                    .setByte(PreferencesManager.PreferenceKey.TEMPERATURE_UNIT, getTemperatureUnitFromSymbol(text))
+                    .setByte(PreferencesManager.PreferenceKey.TEMPERATURE_UNIT, getTemperatureUnitFromSymbol(id))
                     .store()
+            rxBus.post(SettingsChangedEvent())
         }
     }
 
-    private fun getTemperatureUnitFromSymbol(symbol: String) = when (symbol) {
-        "°C" -> Constants.UNIT_FLAG_TEMPERATURE_CELSIUS
-        "°F" -> Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT
+    private fun getTemperatureUnitFromSymbol(id: Int) = when (id) {
+        R.id.button_celsius -> Constants.UNIT_FLAG_TEMPERATURE_CELSIUS
+        R.id.button_fahrenheit -> Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT
         else -> throw Exception("undefined temperature symbol")
     }
 

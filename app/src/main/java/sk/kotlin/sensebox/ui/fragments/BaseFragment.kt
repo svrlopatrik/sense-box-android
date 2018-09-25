@@ -61,6 +61,10 @@ abstract class BaseFragment<V : BaseViewModel> : Fragment(), Injectable {
         clearDisposables()
     }
 
+    protected fun refresh() {
+        fragmentManager?.beginTransaction()?.detach(this)?.attach(this)?.commit()
+    }
+
     protected abstract fun setLayout(): Int
     protected abstract fun setViewModel(): V?
     protected abstract fun initViews(savedInstanceState: Bundle?)
