@@ -19,6 +19,8 @@ import sk.kotlin.sensebox.ui.fragments.history.HistoryFragment
 import sk.kotlin.sensebox.ui.fragments.live.LiveFragment
 import sk.kotlin.sensebox.ui.fragments.notification.NotificationFragment
 import sk.kotlin.sensebox.ui.fragments.settings.SettingsFragment
+import sk.kotlin.sensebox.utils.FileLoggingTree
+import timber.log.Timber
 
 /**
  * Created by Patrik Švrlo on 8.9.2018.
@@ -28,7 +30,7 @@ class MainActivity : BaseActivity<MainActivityViewModel>(MainActivityViewModel::
     private lateinit var navigationPagerAdapter: NavigationPagerAdapter
 
     companion object {
-        const val RC_ALLOW_BLUETOOTH = 0x01
+        const val RC_PERMISSIONS = 0x01
 
         fun startActivity(context: Context) {
             context.startActivity(Intent(context, MainActivity::class.java))
@@ -42,7 +44,7 @@ class MainActivity : BaseActivity<MainActivityViewModel>(MainActivityViewModel::
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        checkPermissions(RC_ALLOW_BLUETOOTH, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+        checkPermissions(RC_PERMISSIONS, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
 
     override fun initViews(savedInstanceState: Bundle?) {
@@ -143,7 +145,8 @@ class MainActivity : BaseActivity<MainActivityViewModel>(MainActivityViewModel::
 
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         when (requestCode) {
-            RC_ALLOW_BLUETOOTH -> {
+            RC_PERMISSIONS -> {
+                Timber.plant(FileLoggingTree(this))
             }
         }
     }
