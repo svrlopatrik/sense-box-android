@@ -18,6 +18,8 @@
     <string name="average_temperature">Average temperature:</string>
     <string name="num_of_measurements">Number of measurements:</string>
     <string name="average_humidity">Average humidity:</string>
+    <string name="chart">chart</string>
+    <string name="list">list</string>
 
 
 </resources>

@@ -2,8 +2,9 @@ package sk.kotlin.sensebox.di.modules
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import sk.kotlin.sensebox.ui.fragments.detail_chart.DetailChartFragment
+import sk.kotlin.sensebox.ui.fragments.detail_list.DetailListFragment
 import sk.kotlin.sensebox.ui.fragments.history.HistoryFragment
-import sk.kotlin.sensebox.ui.fragments.history_detail.HistoryDetailFragment
 import sk.kotlin.sensebox.ui.fragments.live.LiveFragment
 import sk.kotlin.sensebox.ui.fragments.notification.NotificationFragment
 import sk.kotlin.sensebox.ui.fragments.settings.SettingsFragment
@@ -21,7 +22,10 @@ abstract class FragmentModule {
     abstract fun contributeHistoryFragment(): HistoryFragment
 
     @ContributesAndroidInjector
-    abstract fun contributeHistoryDetailFragment(): HistoryDetailFragment
+    abstract fun contributeDetailChartFragment(): DetailChartFragment
+
+    @ContributesAndroidInjector
+    abstract fun contributeDetailListFragment(): DetailListFragment
 
     @ContributesAndroidInjector
     abstract fun contributeSettingsFragment(): SettingsFragment

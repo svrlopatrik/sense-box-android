@@ -34,8 +34,13 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelMapKey(HistoryDetailFragmentViewModel::class)
-    abstract fun bindHistoryDetailFragmentViewModel(historyDetailFragmentViewModel: HistoryDetailFragmentViewModel): ViewModel
+    @ViewModelMapKey(DetailChartFragmentViewModel::class)
+    abstract fun bindDetailChartFragmentViewModel(detailChartFragmentViewModel: DetailChartFragmentViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelMapKey(DetailListFragmentViewModel::class)
+    abstract fun bindDetailListFragmentViewModel(detailListFragmentViewModel: DetailListFragmentViewModel): ViewModel
 
     @Binds
     @IntoMap

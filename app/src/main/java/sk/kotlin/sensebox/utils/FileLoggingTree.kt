@@ -21,7 +21,7 @@ class FileLoggingTree(context: Context) : Timber.DebugTree() {
         private const val FILE_TIMESTAMP_FORMAT = "yyyy_MMM_dd__HH_mm_ss"
         private const val LOG_TIMESTAMP_FORMAT = "dd.MMM.yyyy HH:mm:ss"
         private const val LOGS_DIRECTORY_NAME = "logs"
-        private const val LOGS_DIRECTORY_MAX_LOGS = 5
+        private const val LOGS_DIRECTORY_MAX_LOGS = 1
         private const val LOG_FILE_EXTENSION = ".html"
         private const val LOG_FILE_MAX_SIZE = 10_000_000    //in bytes
     }
@@ -73,7 +73,7 @@ class FileLoggingTree(context: Context) : Timber.DebugTree() {
 
                 if (priority == Log.ERROR || t != null) {
 
-                    outputStream.write(String.format("<div style=\"color:red;\">%s | %s | @%s *%s #%s -> %s<br>%s</div>",
+                    outputStream.write(String.format("<pre style=\"color:red;\">%s | %s | @%s *%s #%s -> %s<br>%s</pre>",
                             logDateTime,
                             priorityTag,
                             currentStackTraceElement.fileName,
@@ -83,7 +83,7 @@ class FileLoggingTree(context: Context) : Timber.DebugTree() {
                             getStackTraceFromThrowable(t)).toByteArray(Charset.defaultCharset())
                     )
                 } else if (message.isNotBlank()) {
-                    outputStream.write(String.format("<div>%s | %s | @%s *%s #%s -> %s</div>",
+                    outputStream.write(String.format("<pre>%s | %s | @%s *%s #%s -> %s</pre>",
                             logDateTime,
                             priorityTag,
                             currentStackTraceElement.fileName,
@@ -106,6 +106,9 @@ class FileLoggingTree(context: Context) : Timber.DebugTree() {
             val stringWriter = StringWriter()
             val printWriter = PrintWriter(stringWriter)
             throwable.printStackTrace(printWriter)
+
+            stringWriter.close()
+            printWriter.close()
 
             stringWriter.toString()
         } else {

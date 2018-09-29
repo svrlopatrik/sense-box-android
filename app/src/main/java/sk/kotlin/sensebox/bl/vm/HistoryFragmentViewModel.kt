@@ -3,6 +3,7 @@ package sk.kotlin.sensebox.bl.vm
 import android.arch.lifecycle.LiveData
 import android.bluetooth.BluetoothProfile
 import android.os.Bundle
+import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -13,7 +14,9 @@ import sk.kotlin.sensebox.bl.PreferencesManager
 import sk.kotlin.sensebox.bl.bt.BleClient
 import sk.kotlin.sensebox.bl.bt.BleResult
 import sk.kotlin.sensebox.bl.db.daos.FileDao
+import sk.kotlin.sensebox.bl.db.daos.RecordDao
 import sk.kotlin.sensebox.bl.db.entities.File
+import sk.kotlin.sensebox.bl.db.entities.Record
 import sk.kotlin.sensebox.events.BleConnectionEvent
 import sk.kotlin.sensebox.events.BleFailEvent
 import sk.kotlin.sensebox.events.RxBus
@@ -21,6 +24,7 @@ import sk.kotlin.sensebox.events.SettingsChangedEvent
 import sk.kotlin.sensebox.models.states.HistoryFragmentState
 import sk.kotlin.sensebox.utils.SingleLiveEvent
 import sk.kotlin.sensebox.utils.ValueInterpreter
+import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 
@@ -30,12 +34,14 @@ import javax.inject.Inject
 class HistoryFragmentViewModel @Inject constructor(
         private val bleClient: BleClient,
         private val fileDao: FileDao,
+        private val recordDao: RecordDao,
         private val rxBus: RxBus
 ) : BaseViewModel() {
     private val historyFragmentState = SingleLiveEvent<HistoryFragmentState>()
     private val isReading = SingleLiveEvent<Boolean>()
 
     private var refreshHistoryListDisposable: Disposable? = null
+    private var downloadHistoryDisposable: Disposable? = null
 
     private var loadedFiles = mutableListOf<File>()
 
@@ -52,9 +58,10 @@ class HistoryFragmentViewModel @Inject constructor(
                     .subscribe(
                             {
                                 loadedFiles.addAll(it)
-                                historyFragmentState.postValue(HistoryFragmentState.LocalData(it))
+                                historyFragmentState.postValue(HistoryFragmentState.LocalList(it))
                             },
                             {
+                                Timber.e(it, "Error load files from DB.")
                                 println("onError: ${it.message}")
                             }
                     )
@@ -64,11 +71,29 @@ class HistoryFragmentViewModel @Inject constructor(
                 historyFragmentState.postValue(HistoryFragmentState.Refresh)
             })
         } else {
-            historyFragmentState.postValue(HistoryFragmentState.LocalData(loadedFiles))
+            historyFragmentState.postValue(HistoryFragmentState.LocalList(loadedFiles))
         }
     }
 
+    private fun loadFilesFromDb(): Single<List<File>> {
+        return fileDao.getAll()
+                .flatMapIterable { it }
+                .map { file ->
+                    if (PreferencesManager.getByteValue(PreferencesManager.PreferenceKey.TEMPERATURE_UNIT) == Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT) {
+                        file.apply {
+                            averageTemperature?.let {
+                                averageTemperature = ValueInterpreter.celsiusToFahrenheit(it)
+                            }
+                        }
+                    }
+                    file
+                }
+                .toList()
+    }
+
     fun refreshHistoryListData() {
+        Timber.i("Refresh history list data.")
+
         disposeHistoryDataRefreshing()
 
         refreshHistoryListDisposable = bleClient.connect(Constants.BLE_DEVICE_MAC)
@@ -90,7 +115,7 @@ class HistoryFragmentViewModel @Inject constructor(
                 }
                 .flatMapMaybe {
                     when (it) {
-                        is BleResult.Success -> processData(it)
+                        is BleResult.Success -> processHistoryListData(it)
                         is BleResult.Failure -> {
                             historyFragmentState.postValue(HistoryFragmentState.Error(it.bleFailState.name))
                             rxBus.post(BleFailEvent(it.bleFailState.name))
@@ -114,17 +139,20 @@ class HistoryFragmentViewModel @Inject constructor(
                             if (it.isNotEmpty()) {
                                 loadedFiles.clear()
                                 loadedFiles.addAll(it)
-                                historyFragmentState.postValue(HistoryFragmentState.NewData(it))
+                                historyFragmentState.postValue(HistoryFragmentState.NewList(it))
                             }
                         },
-                        { println("onError: ${it.message}") }
+                        {
+                            Timber.e(it, "Error load history list.")
+                            println("onError: ${it.message}")
+                        }
                 )
                 .also {
                     addDisposable(it)
                 }
     }
 
-    private fun processData(success: BleResult.Success): Maybe<File> {
+    private fun processHistoryListData(success: BleResult.Success): Maybe<File> {
         val fileName = ValueInterpreter.byteArrayToInt(success.data.copyOfRange(0, 4)).toString()
         val fileSize = ValueInterpreter.byteArrayToInt(success.data.copyOfRange(4, 8))
         val fileDate = ValueInterpreter.rawDateToCalendar(fileName.toInt())
@@ -156,26 +184,104 @@ class HistoryFragmentViewModel @Inject constructor(
                 }
     }
 
-    private fun loadFilesFromDb(): Single<List<File>> {
-        return fileDao.getAll()
-                .flatMapIterable { it }
-                .map { file ->
-                    if (PreferencesManager.getByteValue(PreferencesManager.PreferenceKey.TEMPERATURE_UNIT) == Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT) {
-                        file.apply {
-                            averageTemperature?.let {
-                                averageTemperature = ValueInterpreter.celsiusToFahrenheit(it)
-                            }
+    private fun processHistoryData(file: File, bleResults: List<BleResult>): Completable {
+        var timestamp = 0
+        var temperature = 0f
+        var humidity = 0f
+
+        if (bleResults.size == 3) {  //check if all data been received
+            for (item in bleResults) {       //check if all data are of correct type
+                if (item is BleResult.Success) {
+                    when (item.data[0]) {
+                        Constants.RESPONSE_FLAG_TIMESTAMP -> timestamp = ValueInterpreter.byteArrayToInt(item.data.copyOfRange(1, 5))
+                        Constants.RESPONSE_FLAG_TEMPERATURE -> temperature = ValueInterpreter.byteArrayToFloat(item.data.copyOfRange(1, 5))
+                        Constants.RESPONSE_FLAG_HUMIDITY -> humidity = ValueInterpreter.byteArrayToFloat(item.data.copyOfRange(1, 5))
+                    }
+                } else {
+                    return Completable.complete()
+                }
+            }
+
+            val calendar = ValueInterpreter.unixTimestampToCalendar(timestamp)
+            val record = Record(file.id, temperature, humidity, calendar.get(Calendar.SECOND), calendar.get(Calendar.MINUTE), calendar.get(Calendar.HOUR_OF_DAY)).apply { id = timestamp.toString() }
+            recordDao.insertSingle(record)
+        }
+
+        return Completable.complete()
+    }
+
+    fun downloadHistoryData(file: File) {
+        Timber.i("Download history data.")
+        disposeDownloadHistory()
+
+        //create characteristic data in form: flag + date in byte array
+        val dateInBytes = ValueInterpreter.intToByteArray(file.id.toInt())
+        val characteristicData = ByteArray(dateInBytes.size + 1).apply { set(0, Constants.REQUEST_CODE_HISTORY) }
+        System.arraycopy(dateInBytes, 0, characteristicData, 1, dateInBytes.size)
+
+        downloadHistoryDisposable = bleClient.connect(Constants.BLE_DEVICE_MAC)
+                .flatMap {
+                    when (it) {
+                        is BleResult.Connected -> bleClient.writeCharacteristic(Constants.BLE_UUID_SERVICE, Constants.BLE_UUID_CHARACTERISTIC, *characteristicData)
+                        else -> Single.fromCallable {
+                            rxBus.post(BleConnectionEvent(false))
+                            it
                         }
                     }
-                    file
                 }
-                .toList()
+                .toFlowable()
+                .flatMap {
+                    when (it) {
+                        BleResult.CharacteristicsWritten -> bleClient.notifyCharacteristics(Constants.BLE_UUID_SERVICE, Constants.BLE_UUID_CHARACTERISTIC, Constants.BLE_UUID_DESCRIPTOR)
+                        else -> Flowable.fromCallable { it }
+                    }
+                }
+                .buffer(3)
+                .flatMapCompletable {
+                    if (it.isNotEmpty()) {
+                        val firstResult = it[0]
+                        when (firstResult) {
+                            is BleResult.Success -> processHistoryData(file, it)
+                            is BleResult.Failure -> {
+                                historyFragmentState.postValue(HistoryFragmentState.Error(firstResult.bleFailState.name))
+                                rxBus.post(BleFailEvent(firstResult.bleFailState.name))
+                                Completable.complete()
+                            }
+                            else -> Completable.complete()
+                        }
+                    } else {
+                        Completable.complete()
+                    }
+                }
+                .doOnSubscribe {
+                    if (!bleClient.isConnected()) {
+                        rxBus.post(BleConnectionEvent(true))
+                    }
+                    isReading.postValue(true)
+                }
+                .doFinally { isReading.postValue(false) }
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(
+                        { historyFragmentState.postValue(HistoryFragmentState.HistoryDownloaded(file)) },
+                        {
+                            Timber.e(it, "Error download history data.")
+                            println("onError: ${it.message}")
+                        }
+                )
+                .also { addDisposable(it) }
     }
 
     private fun disposeHistoryDataRefreshing() {
         refreshHistoryListDisposable?.let {
             removeDisposable(it)
             refreshHistoryListDisposable = null
+        }
+    }
+
+    private fun disposeDownloadHistory() {
+        downloadHistoryDisposable?.let {
+            removeDisposable(it)
+            downloadHistoryDisposable = null
         }
     }
 

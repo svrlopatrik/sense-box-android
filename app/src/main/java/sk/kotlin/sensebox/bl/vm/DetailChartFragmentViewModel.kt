@@ -6,7 +6,7 @@ import javax.inject.Inject
 /**
  * Created by Patrik Švrlo on 8.9.2018.
  */
-class HistoryDetailFragmentViewModel @Inject constructor() : BaseViewModel() {
+class DetailChartFragmentViewModel @Inject constructor() : BaseViewModel() {
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
 

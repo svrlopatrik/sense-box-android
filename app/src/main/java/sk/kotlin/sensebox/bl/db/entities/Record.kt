@@ -14,14 +14,16 @@ import android.arch.persistence.room.*
 data class Record(
         @ColumnInfo(name = Record.COLUMN_FK_FILE)
         var fkFile: String,
-        @ColumnInfo(name = Record.COLUMN_VALUE)
-        var value: Float,
+        @ColumnInfo(name = Record.COLUMN_TEMPERATURE)
+        var temperature: Float,
+        @ColumnInfo(name = Record.COLUMN_HUMIDITY)
+        var humidity: Float,
         @ColumnInfo(name = Record.COLUMN_SECOND)
         var second: Int,
-        @ColumnInfo(name = Record.COLUMN_HOUR)
-        var hour: Int,
         @ColumnInfo(name = Record.COLUMN_MINUTE)
-        var minute: Int
+        var minute: Int,
+        @ColumnInfo(name = Record.COLUMN_HOUR)
+        var hour: Int
 ) : BaseEntity() {
 
     companion object {
@@ -31,7 +33,9 @@ data class Record(
         @Ignore
         const val COLUMN_FK_FILE = "fk_file"
         @Ignore
-        const val COLUMN_VALUE = "value"
+        const val COLUMN_TEMPERATURE = "temperature"
+        @Ignore
+        const val COLUMN_HUMIDITY = "humidity"
         @Ignore
         const val COLUMN_SECOND = "second"
         @Ignore

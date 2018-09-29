@@ -54,12 +54,12 @@ object ValueInterpreter {
     }
 
     @JvmStatic
-    fun millisToDate(millis: Long, timezone: String = TimeZone.getDefault().id): String {
+    fun millisToDate(millis: Long): String {
         return millisToFormattedForm(millis, TimeZone.getDefault().id, PreferencesManager.getStringValue(PreferencesManager.PreferenceKey.DATE_FORMAT))
     }
 
     @JvmStatic
-    fun millisToUtcTime(millis: Long, timezone: String = TimeZone.getDefault().id): String {
+    fun millisToUtcTime(millis: Long): String {
         return millisToFormattedForm(millis, Constants.TIMEZONE_RTC_MODULE, PreferencesManager.getStringValue(PreferencesManager.PreferenceKey.TIME_FORMAT))
     }
 
@@ -87,6 +87,14 @@ object ValueInterpreter {
     }
 
     @JvmStatic
+    fun unixTimestampToCalendar(unixTimestamp: Int): Calendar {
+        return Calendar.getInstance().apply {
+            timeZone = TimeZone.getTimeZone(Constants.TIMEZONE_RTC_MODULE)
+            timeInMillis = unixTimestampToMillis(unixTimestamp)
+        }
+    }
+
+    @JvmStatic
     fun floatToFormattedTemperature(value: Float): String {
         return floatToFormattedValue(value, 2, PreferencesManager.getStringValue(PreferencesManager.PreferenceKey.TEMPERATURE_SYMBOL))
     }
@@ -98,5 +106,15 @@ object ValueInterpreter {
 
     private fun floatToFormattedValue(value: Float, decimals: Int, unit: String): String {
         return String.format("%.${decimals}f %s", value, unit)
+    }
+
+    fun printByteArray(vararg data: Byte): String {
+        val builder = StringBuilder()
+        for (item in data) {
+            builder.append(String.format("%02X, ", item))
+        }
+        builder.setLength(builder.length - 2)
+
+        return builder.toString()
     }
 }

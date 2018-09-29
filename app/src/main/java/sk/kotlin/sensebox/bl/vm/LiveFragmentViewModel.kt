@@ -19,6 +19,7 @@ import sk.kotlin.sensebox.events.SettingsChangedEvent
 import sk.kotlin.sensebox.models.states.LiveFragmentState
 import sk.kotlin.sensebox.utils.SingleLiveEvent
 import sk.kotlin.sensebox.utils.ValueInterpreter
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -70,16 +71,14 @@ class LiveFragmentViewModel @Inject constructor(
     }
 
     fun refreshActualData() {
+        Timber.i("Refresh actual data.")
         disposeActualDataRefreshing()
 
         refreshActualDisposable = bleClient.connect(Constants.BLE_DEVICE_MAC)
                 .flatMap {
                     when (it) {
                         is BleResult.Connected -> bleClient.writeCharacteristic(Constants.BLE_UUID_SERVICE, Constants.BLE_UUID_CHARACTERISTIC, Constants.REQUEST_CODE_ACTUAL)
-                        else -> Single.fromCallable {
-                            rxBus.post(BleConnectionEvent(false))
-                            it
-                        }
+                        else -> Single.fromCallable { it }
                     }
                 }
                 .toFlowable()
@@ -127,11 +126,12 @@ class LiveFragmentViewModel @Inject constructor(
                                 }
                                 is BleResult.Failure -> {
                                     liveFragmentState.postValue(LiveFragmentState.Error(it.bleFailState.name))
+                                    rxBus.post(BleConnectionEvent(false))
                                     rxBus.post(BleFailEvent(it.bleFailState.name))
                                 }
                             }
                         },
-                        { println("onError: ${it.message}") },
+                        { Timber.e(it, "Error refresh actual data.") },
                         { println("onComplete") }
                 ).also {
                     addDisposable(it)
