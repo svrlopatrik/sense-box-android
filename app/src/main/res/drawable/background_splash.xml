@@ -5,9 +5,9 @@
     <item android:drawable="@color/white" />
 
     <item android:gravity="center">
-        <!--<bitmap-->
-        <!--android:gravity="fill_horizontal|fill_vertical"-->
-        <!--android:src="@drawable/logo" />-->
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/image_splash" />
     </item>
 
 </layer-list>
