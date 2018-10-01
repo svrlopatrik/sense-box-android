@@ -12,4 +12,5 @@ sealed class BleResult {
     object CharacteristicsWritten : BleResult()
     object ServicesDiscovered : BleResult()
     object DescriptorWritten : BleResult()
+    object CharacteristicNotified : BleResult()
 }

@@ -58,9 +58,7 @@ class MainActivity : BaseActivity<MainActivityViewModel>(MainActivityViewModel::
     }
 
     private fun observeState() {
-        viewModel?.let { viewModel ->
-            viewModel.getMainActivityState().observe(this, Observer { state -> state?.let { render(it) } })
-        }
+        viewModel?.getMainActivityState()?.observe(this, Observer { state -> state?.let { render(it) } })
     }
 
     private fun render(state: MainActivityState) {

@@ -149,7 +149,7 @@ class BleClient(val context: Context) {
     }
 
     fun connect(deviceMac: String, autoConnect: Boolean = false): Single<BleResult> {
-        Timber.i("Connecting device.")
+        Timber.i("Connect device.")
         return when {
             isConnected() -> Single.fromCallable { BleResult.Connected }
             btDevice != null -> reconnect(btDevice!!, autoConnect)
@@ -355,8 +355,9 @@ class BleClient(val context: Context) {
                                                     }
                                                 }
                                             }
-
+                                            Timber.i("Characteristic notified.")
                                             characteristicChangedListener?.let { bleGattCallback.addCharacteristicChangedListener(it) }
+                                            emitter.onNext(BleResult.CharacteristicNotified)
                                         } else {
                                             Timber.i("Cannot notify characteristic.")
                                             emitter.onNext(BleResult.Failure(BleFailState.CANNOT_NOTIFY_CHARACTERISTIC))

@@ -1,5 +1,7 @@
 package sk.kotlin.sensebox.utils
 
+import android.os.Handler
+import android.os.Looper
 import android.support.annotation.LayoutRes
 import android.view.LayoutInflater
 import android.view.View
@@ -19,4 +21,10 @@ fun View.show() {
 
 fun View.hide() {
     this.visibility = View.GONE
+}
+
+fun Any.runOnUiThread(function: () -> Unit) {
+    Handler(Looper.getMainLooper()).post {
+        function()
+    }
 }

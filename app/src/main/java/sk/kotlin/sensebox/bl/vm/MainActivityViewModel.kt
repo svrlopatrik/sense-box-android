@@ -1,7 +1,6 @@
 package sk.kotlin.sensebox.bl.vm
 
 import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
 import android.bluetooth.BluetoothProfile
 import android.os.Bundle
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -11,6 +10,7 @@ import sk.kotlin.sensebox.events.BleConnectionEvent
 import sk.kotlin.sensebox.events.BleFailEvent
 import sk.kotlin.sensebox.events.RxBus
 import sk.kotlin.sensebox.models.states.MainActivityState
+import sk.kotlin.sensebox.utils.SingleLiveEvent
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -22,7 +22,7 @@ class MainActivityViewModel @Inject constructor(
         private val rxBus: RxBus
 ) : BaseViewModel() {
 
-    private val mainActivityState = MutableLiveData<MainActivityState>()
+    private val mainActivityState = SingleLiveEvent<MainActivityState>()
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
         if (savedInstanceState == null) {

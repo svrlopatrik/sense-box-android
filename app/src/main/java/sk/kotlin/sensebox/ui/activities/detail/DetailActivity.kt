@@ -1,5 +1,6 @@
 package sk.kotlin.sensebox.ui.activities.detail
 
+import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -7,19 +8,22 @@ import android.support.v4.app.Fragment
 import kotlinx.android.synthetic.main.activity_detail.*
 import sk.kotlin.sensebox.R
 import sk.kotlin.sensebox.bl.db.entities.File
-import sk.kotlin.sensebox.bl.vm.BaseViewModel
+import sk.kotlin.sensebox.bl.vm.DetailActivityViewModel
+import sk.kotlin.sensebox.models.states.DetailActivityState
 import sk.kotlin.sensebox.ui.activities.BaseActivity
 import sk.kotlin.sensebox.ui.activities.main.NavigationPagerAdapter
 import sk.kotlin.sensebox.ui.fragments.detail_chart.DetailChartFragment
 import sk.kotlin.sensebox.ui.fragments.detail_list.DetailListFragment
 
-class DetailActivity : BaseActivity<BaseViewModel>() {
+class DetailActivity : BaseActivity<DetailActivityViewModel>(DetailActivityViewModel::class.java) {
 
     companion object {
+        private const val KEY_FILE_ID = "key_file_id"
         private const val KEY_FILE = "key_file"
 
         fun startActivity(context: Context, file: File) {
             val intent = Intent(context, DetailActivity::class.java)
+            intent.putExtra(KEY_FILE_ID, file.id)
             intent.putExtra(KEY_FILE, file)
             context.startActivity(intent)
         }
@@ -31,14 +35,31 @@ class DetailActivity : BaseActivity<BaseViewModel>() {
     override fun setLayout() = R.layout.activity_detail
 
     override fun initViews(savedInstanceState: Bundle?) {
-        if (!intent.hasExtra(KEY_FILE)) {
+        if (!intent.hasExtra(KEY_FILE) || !intent.hasExtra(KEY_FILE_ID)) {
             return
         }
         file = intent.getParcelableExtra(KEY_FILE)
+        file.id = intent.getStringExtra(KEY_FILE_ID)
 
+        viewModel?.loadRecords(file)
+
+        observeState()
         initViewPager()
         initTabLayout()
         initBackButton()
+    }
+
+    private fun observeState() {
+        viewModel?.getDetailActivityState()?.observe(this, Observer { state -> state?.let { render(it) } })
+    }
+
+    private fun render(state: DetailActivityState) {
+        when (state) {
+            is DetailActivityState.Success -> {
+            }
+            is DetailActivityState.Error -> {
+            }
+        }
     }
 
     private fun initViewPager() {

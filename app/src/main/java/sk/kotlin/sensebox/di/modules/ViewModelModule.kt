@@ -24,6 +24,11 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
+    @ViewModelMapKey(DetailActivityViewModel::class)
+    abstract fun bindDetailActivityViewModel(detailActivityViewModel: DetailActivityViewModel): ViewModel
+
+    @Binds
+    @IntoMap
     @ViewModelMapKey(LiveFragmentViewModel::class)
     abstract fun bindLiveFragmentViewModel(liveFragmentViewModel: LiveFragmentViewModel): ViewModel
 
@@ -31,16 +36,6 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelMapKey(HistoryFragmentViewModel::class)
     abstract fun bindHistoryFragmentViewModel(historyFragmentViewModel: HistoryFragmentViewModel): ViewModel
-
-    @Binds
-    @IntoMap
-    @ViewModelMapKey(DetailChartFragmentViewModel::class)
-    abstract fun bindDetailChartFragmentViewModel(detailChartFragmentViewModel: DetailChartFragmentViewModel): ViewModel
-
-    @Binds
-    @IntoMap
-    @ViewModelMapKey(DetailListFragmentViewModel::class)
-    abstract fun bindDetailListFragmentViewModel(detailListFragmentViewModel: DetailListFragmentViewModel): ViewModel
 
     @Binds
     @IntoMap

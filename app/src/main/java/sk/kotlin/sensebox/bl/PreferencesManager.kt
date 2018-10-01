@@ -132,6 +132,7 @@ class PreferencesManager(context: Context, name: String) {
         LAST_ACTUAL_HUMIDITY(0f),
         TEMPERATURE_UNIT(Constants.UNIT_FLAG_TEMPERATURE_CELSIUS),
         TEMPERATURE_SYMBOL("°C"),
+        HUMIDITY_SYMBOL("%"),
         DATE_FORMAT(Constants.DATE_FORMAT_DEFAULT),
         TIME_FORMAT(Constants.TIME_FORMAT_DEFAULT),
         DATETIME_FORMAT(Constants.DATETIME_FORMAT_DEFAULT);
