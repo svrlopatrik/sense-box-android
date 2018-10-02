@@ -86,7 +86,7 @@
                 android:layout_height="0dp"
                 android:layout_marginStart="24dp"
                 android:gravity="center_vertical"
-                android:text="@{ValueInterpreter.floatToFormattedTemperature(item.temperature)}"
+                android:text="@{ValueInterpreter.floatToFormattedTemperature(item.temperature, false)}"
                 android:textColor="@color/black"
                 android:textSize="15sp"
                 app:layout_constraintBottom_toBottomOf="@+id/image_temperature"

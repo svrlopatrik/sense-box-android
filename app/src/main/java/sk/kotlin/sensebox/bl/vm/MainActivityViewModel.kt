@@ -25,7 +25,7 @@ class MainActivityViewModel @Inject constructor(
     private val mainActivityState = SingleLiveEvent<MainActivityState>()
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
+        if (!isInitialized) {
             addDisposable(bleClient.connectionState()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -73,6 +73,8 @@ class MainActivityViewModel @Inject constructor(
                         mainActivityState.value = MainActivityState.Error(it.message)
                     }
             )
+
+            isInitialized = true
         }
     }
 

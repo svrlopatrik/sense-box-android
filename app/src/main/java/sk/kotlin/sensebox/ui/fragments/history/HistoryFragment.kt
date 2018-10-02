@@ -40,9 +40,7 @@ class HistoryFragment : BaseFragment<HistoryFragmentViewModel>() {
     }
 
     private fun observeState() {
-        viewModel?.let { viewModel ->
-            viewModel.getHistoryFragmentState().observe(this, Observer { state -> state?.let { render(it) } })
-        }
+        viewModel?.getHistoryFragmentState()?.observe(this, Observer { state -> state?.let { render(it) } })
     }
 
     private fun render(state: HistoryFragmentState) {

@@ -95,8 +95,12 @@ object ValueInterpreter {
     }
 
     @JvmStatic
-    fun floatToFormattedTemperature(value: Float): String {
-        return floatToFormattedValue(value, 2, PreferencesManager.getStringValue(PreferencesManager.PreferenceKey.TEMPERATURE_SYMBOL))
+    fun floatToFormattedTemperature(value: Float, checkConversion: Boolean = false): String {
+        var localValue = value
+        if (checkConversion && PreferencesManager.getByteValue(PreferencesManager.PreferenceKey.TEMPERATURE_UNIT) == Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT) {
+            localValue = celsiusToFahrenheit(value)
+        }
+        return floatToFormattedValue(localValue, 2, PreferencesManager.getStringValue(PreferencesManager.PreferenceKey.TEMPERATURE_SYMBOL))
     }
 
     @JvmStatic

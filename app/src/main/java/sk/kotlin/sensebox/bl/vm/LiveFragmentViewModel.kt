@@ -42,7 +42,7 @@ class LiveFragmentViewModel @Inject constructor(
     private var refreshActualDisposable: Disposable? = null
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
+        if (!isInitialized) {
             addDisposable(bleClient.connectionState()
                     .filter { it == BluetoothProfile.STATE_DISCONNECTED }
                     .subscribeOn(Schedulers.newThread())
@@ -53,6 +53,8 @@ class LiveFragmentViewModel @Inject constructor(
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { liveFragmentState.value = LiveFragmentState.Refresh }
             )
+
+            isInitialized = true
         }
 
         if (prefs.exists(PreferenceKey.LAST_ACTUAL_TIMESTAMP)) {
@@ -157,13 +159,7 @@ class LiveFragmentViewModel @Inject constructor(
     }
 
     private fun createTemperatureState(temperature: Float): LiveFragmentState.Temperature {
-        val temperatureUnit = PreferencesManager.getByteValue(PreferenceKey.TEMPERATURE_UNIT)
-        var temp = temperature
-        if (temperatureUnit == Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT) {
-            temp = ValueInterpreter.celsiusToFahrenheit(temperature)
-        }
-
-        return LiveFragmentState.Temperature(temp)
+        return LiveFragmentState.Temperature(temperature)
     }
 
     private fun createHumidityState(humidity: Float): LiveFragmentState.Humidity {

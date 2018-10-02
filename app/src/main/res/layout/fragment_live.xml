@@ -72,7 +72,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:text="@{ValueInterpreter.floatToFormattedTemperature(viewModel.actualTemperature.value)}"
+            android:text="@{viewModel.actualTemperature != null ? ValueInterpreter.floatToFormattedTemperature(viewModel.actualTemperature.value, true) : @string/not_measured_symbol}"
             app:layout_constraintBaseline_toBaselineOf="@+id/text_title_temperature"
             app:layout_constraintStart_toEndOf="@+id/text_title_temperature"
             tools:text="21.10 °C" />
@@ -91,7 +91,7 @@
             android:id="@+id/text_value_humidity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{ValueInterpreter.floatToFormattedHumidity(viewModel.actualHumidity.value)}"
+            android:text="@{viewModel.actualHumidity != null ? ValueInterpreter.floatToFormattedHumidity(viewModel.actualHumidity.value) : @string/not_measured_symbol}"
             app:layout_constraintBaseline_toBaselineOf="@+id/text_title_humidity"
             app:layout_constraintStart_toStartOf="@+id/text_value_temperature"
             tools:text="55.50 %" />

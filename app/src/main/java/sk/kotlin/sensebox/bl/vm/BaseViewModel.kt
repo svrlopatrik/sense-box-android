@@ -10,6 +10,8 @@ import io.reactivex.disposables.Disposable
  */
 abstract class BaseViewModel : ViewModel() {
 
+    protected var isInitialized = false
+
     protected val disposables: CompositeDisposable by lazy {
         CompositeDisposable()
     }

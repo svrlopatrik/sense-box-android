@@ -110,7 +110,7 @@
                         android:layout_column="2"
                         android:layout_weight="1"
                         android:gravity="end"
-                        android:text="@{ValueInterpreter.floatToFormattedTemperature(item.averageTemperature)}"
+                        android:text="@{ValueInterpreter.floatToFormattedTemperature(item.averageTemperature, true)}"
                         tools:text="26.75 °C" />
 
                 </TableRow>

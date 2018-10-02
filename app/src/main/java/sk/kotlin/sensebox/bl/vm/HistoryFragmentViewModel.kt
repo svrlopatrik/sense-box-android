@@ -11,7 +11,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import sk.kotlin.sensebox.Constants
-import sk.kotlin.sensebox.bl.PreferencesManager
 import sk.kotlin.sensebox.bl.bt.BleClient
 import sk.kotlin.sensebox.bl.bt.BleResult
 import sk.kotlin.sensebox.bl.db.daos.FileDao
@@ -48,7 +47,7 @@ class HistoryFragmentViewModel @Inject constructor(
     private var loadedFiles = mutableListOf<File>()
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
+        if (!isInitialized) {
             addDisposable(bleClient.connectionState()
                     .filter { it == BluetoothProfile.STATE_DISCONNECTED }
                     .subscribeOn(Schedulers.newThread())
@@ -74,6 +73,8 @@ class HistoryFragmentViewModel @Inject constructor(
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { historyFragmentState.value = HistoryFragmentState.Refresh }
             )
+
+            isInitialized = true
         } else {
             historyFragmentState.value = HistoryFragmentState.LocalList(loadedFiles)
         }
@@ -81,17 +82,17 @@ class HistoryFragmentViewModel @Inject constructor(
 
     private fun loadFilesFromDb(): Single<List<File>> {
         return fileDao.getAll()
-                .flatMapIterable { it }
-                .map { file ->
-                    if (PreferencesManager.getByteValue(PreferencesManager.PreferenceKey.TEMPERATURE_UNIT) == Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT) {
-                        file.apply {
-                            averageTemperature?.let {
-                                averageTemperature = ValueInterpreter.celsiusToFahrenheit(it)
-                            }
-                        }
-                    }
-                    file
-                }.toList()
+//                .flatMapIterable { it }
+//                .map { file ->
+//                    if (PreferencesManager.getByteValue(PreferencesManager.PreferenceKey.TEMPERATURE_UNIT) == Constants.UNIT_FLAG_TEMPERATURE_FAHRENHEIT) {
+//                        file.apply {
+//                            averageTemperature?.let {
+//                                averageTemperature = ValueInterpreter.celsiusToFahrenheit(it)
+//                            }
+//                        }
+//                    }
+//                    file
+//                }.toList()
     }
 
     fun refreshHistoryListData() {
