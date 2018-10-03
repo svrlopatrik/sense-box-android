@@ -14,44 +14,52 @@
             type="sk.kotlin.sensebox.bl.db.entities.Record" />
     </data>
 
-    <android.support.v7.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:foreground="?android:attr/selectableItemBackground"
-        app:cardBackgroundColor="@color/cc_bg_100"
-        app:cardCornerRadius="6dp"
-        app:cardElevation="3dp">
-
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+            <View
+                android:id="@+id/view_vertical_line"
+                android:layout_width="2dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="8dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/image_bullet"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="4dp"
+                android:src="@drawable/ic_circle"
+                app:layout_constraintBottom_toBottomOf="@+id/text_time"
+                app:layout_constraintEnd_toStartOf="@+id/text_time"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/view_vertical_line" />
 
             <TextView
                 android:id="@+id/text_time"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginEnd="8dp"
                 android:gravity="center"
                 android:text="@{ValueInterpreter.millisToUtcTime(Long.parseLong(item.id) * 1000)}"
                 android:textColor="@color/black"
                 android:textSize="18sp"
-                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/view_vertical_line"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="15:43:28" />
 
             <View
                 android:id="@+id/view_divider"
                 android:layout_width="0dp"
-                android:layout_height="2dp"
+                android:layout_height="1dp"
                 android:layout_marginStart="24dp"
-                android:layout_marginTop="8dp"
                 android:layout_marginEnd="24dp"
                 android:background="@color/cc_bg_600"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -60,25 +68,26 @@
 
             <ImageView
                 android:id="@+id/image_temperature"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:src="@drawable/ic_temperature"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/view_vertical_line"
                 app:layout_constraintTop_toBottomOf="@+id/view_divider" />
 
             <ImageView
                 android:id="@+id/image_humidity"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="24dp"
                 android:src="@drawable/ic_humidity"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/image_temperature" />
+                app:layout_constraintStart_toEndOf="@+id/view_vertical_line"
+                app:layout_constraintTop_toBottomOf="@+id/image_temperature"
+                app:layout_constraintVertical_bias="0.0" />
 
             <TextView
                 android:id="@+id/text_temperature"
@@ -112,24 +121,23 @@
 
             <ImageView
                 android:id="@+id/image_temp_diff"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintBottom_toBottomOf="@+id/text_temperature"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/view_divider"
+                app:layout_constraintTop_toTopOf="@+id/text_temperature"
                 tools:src="@drawable/ic_arrow_downward" />
 
             <ImageView
                 android:id="@+id/image_humi_diff"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintBottom_toBottomOf="@+id/text_humidity"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/image_temp_diff"
+                app:layout_constraintTop_toTopOf="@+id/text_humidity"
                 tools:src="@drawable/ic_arrow_upward" />
 
         </android.support.constraint.ConstraintLayout>
-    </android.support.v7.widget.CardView>
 </layout>
