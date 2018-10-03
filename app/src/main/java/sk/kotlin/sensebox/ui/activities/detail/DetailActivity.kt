@@ -82,12 +82,19 @@ class DetailActivity : BaseActivity<DetailActivityViewModel>(DetailActivityViewM
     }
 
     private fun initBackButton() {
-        button_back.setOnClickListener { onBackPressed() }
+        button_back.setOnClickListener {
+            finish()
+            overridePendingTransition(0, R.anim.slide_out_top)
+        }
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
-        overridePendingTransition(0, R.anim.slide_out_top)
+        if (view_pager.currentItem != 0) {
+            view_pager.currentItem = 0
+        } else {
+            super.onBackPressed()
+            overridePendingTransition(0, R.anim.slide_out_top)
+        }
     }
 
 }
