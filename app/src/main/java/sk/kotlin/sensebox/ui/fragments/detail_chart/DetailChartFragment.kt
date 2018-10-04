@@ -13,6 +13,8 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IAxisValueFormatter
 import com.github.mikephil.charting.formatter.IValueFormatter
 import kotlinx.android.synthetic.main.fragment_detail_chart.*
+import sk.kotlin.sensebox.BR
+import sk.kotlin.sensebox.Constants
 import sk.kotlin.sensebox.R
 import sk.kotlin.sensebox.bl.PreferencesManager
 import sk.kotlin.sensebox.bl.db.entities.Record
@@ -114,7 +116,12 @@ class DetailChartFragment : BaseFragment<DetailActivityViewModel>() {
     }
 
     private fun observeRecords() {
-        viewModel?.getLoadedRecords()?.observe(this, Observer { data -> data?.let { addGraphData(it) } })
+        viewModel?.getLoadedRecords()?.observe(this, Observer { data ->
+            data?.let {
+                addGraphData(it)
+                analyzeData(it)
+            }
+        })
     }
 
     private fun addGraphData(records: List<Record>) {
@@ -147,4 +154,45 @@ class DetailChartFragment : BaseFragment<DetailActivityViewModel>() {
             }
         }
     }
+
+    private fun analyzeData(records: List<Record>) {
+        val metrics = RecordsMetrics()
+
+        for (record in records) {
+            if (metrics.maxTemperature < record.temperature) {
+                metrics.maxTemperature = record.temperature
+            }
+
+            if (metrics.minTemperature > record.temperature) {
+                metrics.minTemperature = record.temperature
+            }
+
+            if (metrics.maxHumidity < record.humidity) {
+                metrics.maxHumidity = record.humidity
+            }
+
+            if (metrics.minHumidity > record.humidity) {
+                metrics.minHumidity = record.humidity
+            }
+
+            metrics.avgTemperature += record.temperature
+            metrics.avgHumidity += record.humidity
+        }
+
+        metrics.avgTemperature = metrics.avgTemperature / records.size
+        metrics.avgHumidity = metrics.avgHumidity / records.size
+
+        viewBinding?.apply {
+            setVariable(BR.metrics, metrics)
+        }
+    }
+
+    data class RecordsMetrics(
+            var maxTemperature: Float = Constants.MODULE_TEMPERATURE_MIN_VALUE,
+            var minTemperature: Float = Constants.MODULE_TEMPERATURE_MAX_VALUE,
+            var avgTemperature: Float = 0f,
+            var maxHumidity: Float = Constants.MODULE_HUMIDITY_MIN_VALUE,
+            var minHumidity: Float = Constants.MODULE_HUMIDITY_MAX_VALUE,
+            var avgHumidity: Float = 0f
+    )
 }

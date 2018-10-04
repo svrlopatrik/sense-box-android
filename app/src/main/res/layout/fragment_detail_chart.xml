@@ -1,20 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/chart_records"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="200dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <data>
 
-</android.support.constraint.ConstraintLayout>
+        <import type="sk.kotlin.sensebox.utils.ValueInterpreter" />
+
+        <variable
+            name="metrics"
+            type="sk.kotlin.sensebox.ui.fragments.detail_chart.DetailChartFragment.RecordsMetrics" />
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TableLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/chart_records"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <Space style="@style/fragment_chart_table_image" />
+
+                <TextView
+                    style="@style/fragment_chart_table_text_header"
+                    android:text="@string/maximal_abbrev" />
+
+                <TextView
+                    style="@style/fragment_chart_table_text_header"
+                    android:text="@string/minimal_abbrev" />
+
+                <TextView
+                    style="@style/fragment_chart_table_text_header"
+                    android:text="@string/average_abbrev" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    style="@style/fragment_chart_table_image"
+                    android:src="@drawable/ic_temperature" />
+
+                <TextView
+                    android:id="@+id/text_temp_max"
+                    style="@style/fragment_chart_table_text"
+                    android:text="@{metrics != null ? ValueInterpreter.floatToFormattedTemperature(metrics.maxTemperature, false) : @string/not_measured_symbol}"
+                    tools:text="20.0 °C" />
+
+                <TextView
+                    android:id="@+id/text_temp_min"
+                    style="@style/fragment_chart_table_text"
+                    android:text="@{metrics != null ? ValueInterpreter.floatToFormattedTemperature(metrics.minTemperature, false) : @string/not_measured_symbol}"
+                    tools:text="10.0 °C" />
+
+                <TextView
+                    android:id="@+id/text_temp_avg"
+                    style="@style/fragment_chart_table_text"
+                    android:text="@{metrics != null ? ValueInterpreter.floatToFormattedTemperature(metrics.avgTemperature, false) : @string/not_measured_symbol}"
+                    tools:text="15.0 °C" />
+
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    style="@style/fragment_chart_table_image"
+                    android:src="@drawable/ic_humidity" />
+
+                <TextView
+                    android:id="@+id/text_humi_max"
+                    style="@style/fragment_chart_table_text"
+                    android:text="@{metrics != null ? ValueInterpreter.floatToFormattedHumidity(metrics.maxHumidity) : @string/not_measured_symbol}"
+                    tools:text="80 %" />
+
+                <TextView
+                    android:id="@+id/text_humi_min"
+                    style="@style/fragment_chart_table_text"
+                    android:text="@{metrics != null ? ValueInterpreter.floatToFormattedHumidity(metrics.minHumidity) : @string/not_measured_symbol}"
+                    tools:text="70 %" />
+
+                <TextView
+                    android:id="@+id/text_humi_avg"
+                    style="@style/fragment_chart_table_text"
+                    android:text="@{metrics != null ? ValueInterpreter.floatToFormattedHumidity(metrics.avgHumidity) : @string/not_measured_symbol}"
+                    tools:text="75 %" />
+
+            </TableRow>
+
+        </TableLayout>
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chart_records"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="200dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
+</layout>

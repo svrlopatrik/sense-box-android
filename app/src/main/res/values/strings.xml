@@ -23,6 +23,9 @@
     <string name="average_humidity">Average humidity:</string>
     <string name="chart">chart</string>
     <string name="list">list</string>
+    <string name="maximal_abbrev">max</string>
+    <string name="minimal_abbrev">min</string>
+    <string name="average_abbrev">avg</string>
 
 
 </resources>
