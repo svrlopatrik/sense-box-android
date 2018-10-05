@@ -18,7 +18,7 @@ class FileLoggingTree(context: Context) : Timber.DebugTree() {
     companion object {
         private const val TAG = "Logger"
 
-        private const val FILE_TIMESTAMP_FORMAT = "yyyy_MMM_dd__HH_mm_ss"
+        private const val FILE_TIMESTAMP_FORMAT = "yyyy_MM_dd__HH_mm_ss"
         private const val LOG_TIMESTAMP_FORMAT = "dd.MMM.yyyy HH:mm:ss"
         private const val LOGS_DIRECTORY_NAME = "logs"
         private const val LOGS_DIRECTORY_MAX_LOGS = 1
