@@ -1,4 +1,4 @@
-package sk.kotlin.sensebox.models.states
+package sk.kotlin.sensebox.models.ui_states
 
 sealed class DetailActivityState {
 

@@ -29,8 +29,8 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelMapKey(LiveFragmentViewModel::class)
-    abstract fun bindLiveFragmentViewModel(liveFragmentViewModel: LiveFragmentViewModel): ViewModel
+    @ViewModelMapKey(ActualFragmentViewModel::class)
+    abstract fun bindActualFragmentViewModel(actualFragmentViewModel: ActualFragmentViewModel): ViewModel
 
     @Binds
     @IntoMap

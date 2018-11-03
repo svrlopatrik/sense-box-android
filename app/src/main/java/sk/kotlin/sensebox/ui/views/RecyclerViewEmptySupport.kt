@@ -63,4 +63,8 @@ class RecyclerViewEmptySupport : RecyclerView {
         this.emptyView = emptyView
     }
 
+    fun refresh() {
+        emptyObserver.onChanged()
+    }
+
 }

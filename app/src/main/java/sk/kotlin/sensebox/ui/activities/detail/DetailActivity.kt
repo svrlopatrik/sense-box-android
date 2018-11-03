@@ -9,7 +9,7 @@ import kotlinx.android.synthetic.main.activity_detail.*
 import sk.kotlin.sensebox.R
 import sk.kotlin.sensebox.bl.db.entities.File
 import sk.kotlin.sensebox.bl.vm.DetailActivityViewModel
-import sk.kotlin.sensebox.models.states.DetailActivityState
+import sk.kotlin.sensebox.models.ui_states.DetailActivityState
 import sk.kotlin.sensebox.ui.activities.BaseActivity
 import sk.kotlin.sensebox.ui.activities.main.NavigationPagerAdapter
 import sk.kotlin.sensebox.ui.fragments.detail_chart.DetailChartFragment

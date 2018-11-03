@@ -13,10 +13,10 @@ import pub.devrel.easypermissions.EasyPermissions
 import sk.kotlin.sensebox.BR
 import sk.kotlin.sensebox.R
 import sk.kotlin.sensebox.bl.vm.MainActivityViewModel
-import sk.kotlin.sensebox.models.states.MainActivityState
+import sk.kotlin.sensebox.models.ui_states.MainActivityState
 import sk.kotlin.sensebox.ui.activities.BaseActivity
+import sk.kotlin.sensebox.ui.fragments.actual.ActualFragment
 import sk.kotlin.sensebox.ui.fragments.history.HistoryFragment
-import sk.kotlin.sensebox.ui.fragments.live.LiveFragment
 import sk.kotlin.sensebox.ui.fragments.notification.NotificationFragment
 import sk.kotlin.sensebox.ui.fragments.settings.SettingsFragment
 import sk.kotlin.sensebox.utils.FileLoggingTree
@@ -98,7 +98,7 @@ class MainActivity : BaseActivity<MainActivityViewModel>(MainActivityViewModel::
 
     private fun initViewPager() {
         val fragments = arrayOf<Fragment>(
-                LiveFragment.getFragment(),
+                ActualFragment.getFragment(),
                 HistoryFragment.getFragment(),
                 SettingsFragment.getFragment()
         )
@@ -113,7 +113,7 @@ class MainActivity : BaseActivity<MainActivityViewModel>(MainActivityViewModel::
             hideNotification()
 
             when (menuItem.itemId) {
-                R.id.action_live -> view_pager.setCurrentItem(0, true)
+                R.id.action_actual -> view_pager.setCurrentItem(0, true)
                 R.id.action_history -> view_pager.setCurrentItem(1, true)
                 R.id.action_settings -> view_pager.setCurrentItem(2, true)
             }

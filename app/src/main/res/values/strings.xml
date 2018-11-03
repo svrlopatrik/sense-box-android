@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">SenseBox</string>
 
-    <string name="live_uc">LIVE</string>
+    <string name="actual_uc">ACTUAL</string>
     <string name="history_uc">HISTORY</string>
     <string name="settings_uc">SETTINGS</string>
     <string name="last_update">last update: %s</string>
@@ -14,6 +14,7 @@
     <string name="fahrenheit_unit_symbol">°F</string>
     <string name="humidity_unit_symbol">%</string>
     <string name="not_measured_symbol">___.__</string>
+    <string name="count_format">%d/%d</string>
     <string name="list_no_items">There are no items in the list.</string>
     <string name="chart_no_items">There are no date to be presented.</string>
     <string name="temperature_unit">Temperature unit:</string>

@@ -12,10 +12,10 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.support.annotation.RequiresApi
 import android.support.v4.app.Fragment
-import io.reactivex.*
+import io.reactivex.Flowable
 import io.reactivex.Observable
+import io.reactivex.Single
 import sk.kotlin.sensebox.Constants
-import sk.kotlin.sensebox.utils.ValueInterpreter
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -25,8 +25,12 @@ class BleClient(val context: Context) {
     private val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private var btAdapter: BluetoothAdapter? = null
 
+    @Volatile
     private var btGatt: BluetoothGatt? = null
+    @Volatile
     private var btDevice: BluetoothDevice? = null
+    @Volatile
+    private var requestCode: Byte = 0x00
 
     private val bleGattCallback: BleGattCallback
 
@@ -68,10 +72,9 @@ class BleClient(val context: Context) {
 
     fun isConnected(): Boolean {
         return btDevice?.let {
-            btGatt?.services?.isNotEmpty() ?: false && btManager.getConnectionState(it, BluetoothProfile.GATT) == BluetoothProfile.STATE_CONNECTED
+            btManager.getConnectionState(it, BluetoothProfile.GATT) == BluetoothProfile.STATE_CONNECTED
         } ?: false
     }
-
 
     fun disconnect() {
         btGatt?.let {
@@ -81,33 +84,30 @@ class BleClient(val context: Context) {
         }
     }
 
+    fun isDiscovered() = btGatt?.services?.isNotEmpty() ?: false
+
+    fun isGattReady() = isConnected() && isDiscovered()
+
     fun releaseConnection() {
         btGatt = null
         btDevice = null
     }
 
-    fun scanDevices(timeout: Long = 10, timeUnit: TimeUnit = TimeUnit.SECONDS): Observable<BleResult> {
+    private fun scanDevices(timeout: Long = 10, timeUnit: TimeUnit = TimeUnit.SECONDS): Observable<BleResult> {
         Timber.i("Scan ble device.")
-        return if (isEnabled()) {
-            val scanObservable = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-                scanDevicesHigherApi(timeout, timeUnit)
-            } else {
-                scanDevicesLowApi(timeout, timeUnit)
-            }
-
-            Observable.concat(scanObservable, Observable.fromCallable {
-                Timber.e("Device not found.")
-                BleResult.Failure(BleFailState.SCAN_FINISHED)
-            })
+        val scanObservable = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            scanDevicesHigherApi(timeout, timeUnit)
         } else {
-            Observable.fromCallable {
-                Timber.e("Bluetooth not enabled.")
-                BleResult.Failure(BleFailState.BT_NOT_ENABLED)
-            }
+            scanDevicesLowApi(timeout, timeUnit)
         }
+
+        return Observable.concat(scanObservable, Observable.fromCallable {
+            Timber.e("Device not found.")
+            BleResult.Failure(BleFailType.SCAN_FINISHED)
+        })
     }
 
-    private fun scanDevicesLowApi(timeout: Long = 10, timeUnit: TimeUnit = TimeUnit.SECONDS): Observable<BleResult> {
+    private fun scanDevicesLowApi(timeout: Long, timeUnit: TimeUnit): Observable<BleResult> {
         var scanCallback: BluetoothAdapter.LeScanCallback? = null
         return Observable.create<BleResult> { emitter ->
             scanCallback = BluetoothAdapter.LeScanCallback { bluetoothDevice, _, _ ->
@@ -122,7 +122,7 @@ class BleClient(val context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    private fun scanDevicesHigherApi(timeout: Long = 10, timeUnit: TimeUnit = TimeUnit.SECONDS): Observable<BleResult> {
+    private fun scanDevicesHigherApi(timeout: Long, timeUnit: TimeUnit): Observable<BleResult> {
         var scanCallback: ScanCallback? = null
         return Observable.create<BleResult> { emitter ->
             scanCallback = object : ScanCallback() {
@@ -137,21 +137,29 @@ class BleClient(val context: Context) {
                 }
 
                 override fun onScanFailed(errorCode: Int) {
-                    emitter.onNext(BleResult.Failure(BleFailState.SCAN_ERROR))
+                    emitter.onNext(BleResult.Failure(BleFailType.SCAN_ERROR))
                 }
             }
 
             val scanFilters = emptyList<ScanFilter>()
             val scanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_POWER).build()
             btAdapter?.bluetoothLeScanner?.startScan(scanFilters, scanSettings, scanCallback)
-        }.doFinally { btAdapter?.bluetoothLeScanner?.stopScan(scanCallback) }
+        }
+                .doFinally { btAdapter?.bluetoothLeScanner?.stopScan(scanCallback) }
                 .takeUntil(Observable.just(true).delay(timeout, timeUnit))
     }
 
-    fun connect(deviceMac: String, autoConnect: Boolean = false): Single<BleResult> {
+    private fun connect(deviceMac: String, autoConnect: Boolean = false): Single<BleResult> {
         Timber.i("Connect device.")
         return when {
-            isConnected() -> Single.fromCallable { BleResult.Connected }
+            !isEnabled() -> {
+                Timber.e("Bluetooth not enabled.")
+                Single.fromCallable { BleResult.Failure(BleFailType.BT_NOT_ENABLED) }
+            }
+            isGattReady() -> {
+                Timber.i("Connected to device.")
+                Single.fromCallable { BleResult.Connected }
+            }
             btDevice != null -> reconnect(btDevice!!, autoConnect)
             else -> initialConnect(deviceMac, autoConnect)
         }
@@ -160,8 +168,8 @@ class BleClient(val context: Context) {
     private fun initialConnect(deviceMac: String, autoConnect: Boolean): Single<BleResult> {
         return scanDevices(1, TimeUnit.MINUTES)
                 .filter { it is BleResult.Failure || (it is BleResult.DeviceFound && it.bleDevice.address == deviceMac) }
-                .take(1)
-                .flatMapSingle { scanResult ->
+                .firstOrError()
+                .flatMap { scanResult ->
                     when (scanResult) {
                         is BleResult.DeviceFound -> {
                             Timber.i("Device found.")
@@ -170,217 +178,177 @@ class BleClient(val context: Context) {
                         else -> Single.fromCallable { scanResult }
                     }
                 }
-                .singleOrError()
     }
 
     private fun reconnect(device: BluetoothDevice, autoConnect: Boolean): Single<BleResult> {
-        Timber.i("Connecting device.")
-        var connectionChangeListener: BleGattCallback.ConnectionChangeListener? = null
-        return Single.create<BleResult> { emitter ->
-            connectionChangeListener = object : BleGattCallback.ConnectionChangeListener {
-                override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-                    if (status == BluetoothGatt.GATT_SUCCESS) {
-                        if (newState == BluetoothProfile.STATE_CONNECTED) {
-                            Timber.i("Connected to device.")
-                            btDevice = device
-                            btGatt = gatt
-                            emitter.onSuccess(BleResult.Connected)
-                        }
+        return bleGattCallback.connectionChangedSubject.firstOrError()
+                .flatMap<BleResult> {
+                    if (it.status == BluetoothGatt.GATT_SUCCESS && it.newState == BluetoothProfile.STATE_CONNECTED) {
+                        Timber.i("Connected to device.")
+                        btDevice = device
+                        btGatt = it.gatt
+                        discoverServices()
                     } else {
                         Timber.e("Cannot connect to device.")
-                        emitter.onSuccess(BleResult.Failure(BleFailState.CANNOT_CONNECT))
-                        disconnect()
+                        Single.fromCallable { BleResult.Failure(BleFailType.CANNOT_CONNECT) }
+                    }
+                }.flatMap<BleResult> {
+                    when (it) {
+                        is BleResult.ServicesDiscovered -> Single.fromCallable { BleResult.Connected }
+                        else -> Single.fromCallable { it }
                     }
                 }
-            }
-
-            connectionChangeListener?.let { bleGattCallback.addConnectionChangeListener(it) }
-            disconnect()
-            device.connectGatt(context, autoConnect, bleGattCallback)
-        }.flatMap { connectionResult ->
-            when (connectionResult) {
-                is BleResult.Connected -> discoverServices()
-                else -> Single.fromCallable { connectionResult }
-            }
-        }.flatMap { servicesDiscoveryResult ->
-            when (servicesDiscoveryResult) {
-                is BleResult.ServicesDiscovered -> Single.fromCallable { BleResult.Connected }
-                else -> Single.fromCallable { servicesDiscoveryResult }
-            }
-        }.doFinally { connectionChangeListener?.let { bleGattCallback.removeConnectionChangeListener(it) } }
+                .also {
+                    //todo is it necessary
+                    if (isConnected()) {
+                        disconnect()
+                    }
+                    device.connectGatt(context, autoConnect, bleGattCallback)
+                }
     }
 
     private fun discoverServices(): Single<BleResult> {
-        return btGatt?.let { gatt ->
-            var servicesDiscoveredListener: BleGattCallback.ServicesDiscoveredListener? = null
-            return Single.create<BleResult> { emitter ->
-                servicesDiscoveredListener = object : BleGattCallback.ServicesDiscoveredListener {
-                    override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-                        if (status == BluetoothGatt.GATT_SUCCESS && gatt != null) {
+        Timber.i("Discover services.")
+        return when {
+            !isConnected() -> {
+                Timber.e("Cannot discover services - not connected.")
+                Single.fromCallable { BleResult.Failure(BleFailType.NOT_CONNECTED) }
+            }
+            btGatt?.discoverServices() == false -> {
+                Timber.e("Cannot discover services.")
+                Single.fromCallable { BleResult.Failure(BleFailType.CANNOT_DISCOVER_SERVICES) }
+            }
+            else -> bleGattCallback.serviceDiscoveredSubject.firstOrError()
+                    .flatMap<BleResult> {
+                        if (it.status == BluetoothGatt.GATT_SUCCESS && it.gatt != null) {
                             Timber.i("Services discovered.")
-                            btGatt = gatt
-                            emitter.onSuccess(BleResult.ServicesDiscovered)
+                            btGatt = it.gatt
+                            Single.fromCallable { BleResult.ServicesDiscovered }
                         } else {
                             Timber.e("Services discovery failed!")
-                            emitter.onSuccess(BleResult.Failure(BleFailState.CANNOT_DISCOVER_SERVICES))
+                            Single.fromCallable { BleResult.Failure(BleFailType.CANNOT_DISCOVER_SERVICES) }
                         }
                     }
-                }
-
-                Timber.i("Discover services.")
-                if (gatt.discoverServices()) {
-                    servicesDiscoveredListener?.let { bleGattCallback.addServicesDiscoveredListener(it) }
-                } else {
-                    Timber.e("Cannot discover services.")
-                    emitter.onSuccess(BleResult.Failure(BleFailState.CANNOT_DISCOVER_SERVICES))
-                }
-            }.doFinally { servicesDiscoveredListener?.let { bleGattCallback.removeServicesDiscoveredListener(it) } }
-        } ?: return Single.fromCallable {
-            Timber.e("Cannot discover services - not connected.")
-            BleResult.Failure(BleFailState.NOT_CONNECTED)
         }
     }
 
-    fun writeCharacteristic(uuidService: UUID, uuidCharacteristic: UUID, vararg data: Byte): Single<BleResult> {
-        if (!isConnected()) {
-            Timber.e("Cannot write characteristic - not connected.")
-            return Single.fromCallable { BleResult.Failure(BleFailState.NOT_CONNECTED) }
-        }
+    private fun writeCharacteristic(uuidService: UUID, uuidCharacteristic: UUID, vararg data: Byte): Single<BleResult> {
+        Timber.i("Write characteristic.")
+        val characteristic = btGatt?.getService(uuidService)?.getCharacteristic(uuidCharacteristic)
+        characteristic?.value = data
+        characteristic?.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
 
-        var characteristicWriteListener: BleGattCallback.CharacteristicWriteListener? = null
-        return Single.create<BleResult> { emitter ->
-            btGatt?.let { btGatt ->
-                Timber.i("Write characteristic [${ValueInterpreter.printByteArray(*data)}].")
-                val characteristic = btGatt.getService(uuidService).getCharacteristic(uuidCharacteristic)
-                characteristic.value = data
-                characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                if (btGatt.writeCharacteristic(characteristic)) {
-
-                    characteristicWriteListener = object : BleGattCallback.CharacteristicWriteListener {
-                        override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
-                            if (status == BluetoothGatt.GATT_SUCCESS) {
-                                Timber.i("Characteristic written.")
-                                emitter.onSuccess(BleResult.CharacteristicsWritten)
-                            } else {
-                                Timber.e("Write characteristic fail!")
-                                emitter.onSuccess(BleResult.Failure(BleFailState.CANNOT_WRITE_CHARACTERISTIC))
-                            }
+        return when {
+            !isGattReady() -> {
+                Timber.e("Cannot write characteristic - gatt not ready.")
+                Single.fromCallable { BleResult.Failure(BleFailType.NOT_CONNECTED) }
+            }
+            btGatt?.writeCharacteristic(characteristic) == false -> {
+                Timber.e("Cannot write characteristic!")
+                Single.fromCallable { BleResult.Failure(BleFailType.CANNOT_WRITE_CHARACTERISTIC) }
+            }
+            else -> bleGattCallback.characteristicWrittenSubject.firstOrError()
+                    .flatMap<BleResult> {
+                        if (it.status == BluetoothGatt.GATT_SUCCESS) {
+                            Timber.i("Characteristic written.")
+                            Single.fromCallable { BleResult.CharacteristicsWritten }
+                        } else {
+                            Timber.e("Write characteristic fail!")
+                            Single.fromCallable { BleResult.Failure(BleFailType.CANNOT_WRITE_CHARACTERISTIC) }
                         }
                     }
-
-                    characteristicWriteListener?.let { bleGattCallback.addCharacteristicWriteListener(it) }
-
-                } else {
-                    Timber.e("Cannot write characteristic!")
-                    emitter.onSuccess(BleResult.Failure(BleFailState.CANNOT_WRITE_CHARACTERISTIC))
-                }
-            }
-        }.doFinally { characteristicWriteListener?.let { bleGattCallback.removeCharacteristicWriteListener(it) } }
+        }
     }
 
     private fun writeDescriptor(uuidService: UUID, uuidCharacteristic: UUID, uuidDescriptor: UUID, vararg flag: Byte): Single<BleResult> {
-        if (!isConnected()) {
-            Timber.e("Cannot write descriptor - not connected.")
-            return Single.fromCallable { BleResult.Failure(BleFailState.NOT_CONNECTED) }
-        }
+        Timber.i("Write descriptor.")
+        val descriptor = btGatt?.getService(uuidService)?.getCharacteristic(uuidCharacteristic)?.getDescriptor(uuidDescriptor)
+        descriptor?.value = flag
 
-        var descriptorWriteListener: BleGattCallback.DescriptorWriteListener? = null
-        return Single.create<BleResult> { emitter ->
-            btGatt?.let { btGatt ->
-                Timber.i("Write descriptor [${ValueInterpreter.printByteArray(*flag)}].")
-                val descriptor = btGatt.getService(uuidService).getCharacteristic(uuidCharacteristic).getDescriptor(uuidDescriptor)
-                descriptor.value = flag
-                if (btGatt.writeDescriptor(descriptor)) {
-                    descriptorWriteListener = object : BleGattCallback.DescriptorWriteListener {
-                        override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
-                            if (status == BluetoothGatt.GATT_SUCCESS) {
-                                Timber.i("Descriptor written.")
-                                emitter.onSuccess(BleResult.DescriptorWritten)
-                            } else {
-                                Timber.e("Write descriptor failed!")
-                                emitter.onSuccess(BleResult.Failure(BleFailState.CANNOT_WRITE_DESCRIPTOR))
-                            }
+        return when {
+            !isGattReady() -> {
+                Timber.e("Cannot write descriptor - gatt not ready.")
+                Single.fromCallable { BleResult.Failure(BleFailType.NOT_CONNECTED) }
+            }
+            btGatt?.writeDescriptor(descriptor) == false -> {
+                Timber.e("Cannot write descriptor!")
+                Single.fromCallable { BleResult.Failure(BleFailType.CANNOT_WRITE_DESCRIPTOR) }
+            }
+            else -> bleGattCallback.descriptorWrittenSubject.firstOrError()
+                    .flatMap<BleResult> {
+                        if (it.status == BluetoothGatt.GATT_SUCCESS) {
+                            Timber.i("Descriptor written.")
+                            Single.fromCallable { BleResult.DescriptorWritten }
+                        } else {
+                            Timber.e("Write descriptor failed!")
+                            Single.fromCallable { BleResult.Failure(BleFailType.CANNOT_WRITE_DESCRIPTOR) }
                         }
                     }
-                    descriptorWriteListener?.let { bleGattCallback.addDescriptorWriteListener(it) }
-                } else {
-                    Timber.e("Cannot write descriptor!")
-                    emitter.onSuccess(BleResult.Failure(BleFailState.CANNOT_WRITE_DESCRIPTOR))
-                }
-            }
-
-        }.doFinally { descriptorWriteListener?.let { bleGattCallback.removeDescriptorWriteListener(it) } }
+        }
     }
 
-    fun notifyCharacteristics(uuidService: UUID, uuidCharacteristic: UUID, uuidDescriptor: UUID): Flowable<BleResult> {
-        if (!isConnected()) {
-            Timber.e("Cannot notify characteristic - not connected.")
-            return Flowable.fromCallable { BleResult.Failure(BleFailState.NOT_CONNECTED) }
-        }
-
-        return writeDescriptor(uuidService, uuidCharacteristic, uuidDescriptor, *Constants.ENABLE_NOTIFICATIONS_INDICATIONS)
-                .toFlowable()
-                .flatMap { descWriteResult ->
-                    when (descWriteResult) {
-                        is BleResult.Failure -> Flowable.fromCallable { descWriteResult }
-                        else -> {
-
-                            if (!isConnected()) {
-                                Timber.e("Cannot notify descriptor - not connected.")
-                                Flowable.fromCallable { BleResult.Failure(BleFailState.NOT_CONNECTED) }
-                            } else {
-                                btGatt?.let { btGatt ->
-                                    Timber.i("Notify characteristic.")
-                                    var characteristicChangedListener: BleGattCallback.CharacteristicChangedListener? = null
-                                    Flowable.create(FlowableOnSubscribe<BleResult> { emitter ->
-
-                                        val characteristic = btGatt.getService(uuidService).getCharacteristic(uuidCharacteristic)
-                                        if (btGatt.setCharacteristicNotification(characteristic, true)) {
-                                            characteristicChangedListener = object : BleGattCallback.CharacteristicChangedListener {
-                                                override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
-                                                    characteristic?.let {
-                                                        val value = it.value
-                                                        value?.let {
-                                                            Timber.i("Notification received: [${ValueInterpreter.printByteArray(*value)}]")
-
-                                                            when {
-                                                                it.contentEquals(Constants.RESPONSE_FLAG_END) -> emitter.onComplete()
-                                                                it.contentEquals(Constants.RESPONSE_FLAG_UDEF) -> {
-                                                                    emitter.onNext(BleResult.Failure(BleFailState.UNDEFINED_RESPONSE))
-                                                                    emitter.onComplete()
-                                                                }
-                                                                else -> emitter.onNext(BleResult.Success(value))
-                                                            }
-                                                        } ?: emitter.onComplete()
-                                                    }
-                                                }
-                                            }
-                                            Timber.i("Characteristic notified.")
-                                            characteristicChangedListener?.let { bleGattCallback.addCharacteristicChangedListener(it) }
-                                            emitter.onNext(BleResult.CharacteristicNotified)
-                                        } else {
-                                            Timber.i("Cannot notify characteristic.")
-                                            emitter.onNext(BleResult.Failure(BleFailState.CANNOT_NOTIFY_CHARACTERISTIC))
-                                        }
-
-                                    }, BackpressureStrategy.BUFFER).doFinally { characteristicChangedListener?.let { bleGattCallback.removeCharacteristicChangedListener(it) } }
+    private fun notifyCharacteristics(uuidService: UUID, uuidCharacteristic: UUID, uuidDescriptor: UUID): Single<BleResult> {
+        Timber.i("Notify characteristic.")
+        return when {
+            !isGattReady() -> {
+                Timber.e("Cannot notify characteristic - gatt not ready.")
+                Single.fromCallable { BleResult.Failure(BleFailType.NOT_CONNECTED) }
+            }
+            else -> writeDescriptor(uuidService, uuidCharacteristic, uuidDescriptor, *Constants.ENABLE_NOTIFICATIONS_INDICATIONS)
+                    .flatMap {
+                        when (it) {
+                            is BleResult.DescriptorWritten -> {
+                                val characteristic = btGatt?.getService(uuidService)?.getCharacteristic(uuidCharacteristic)
+                                if (btGatt?.setCharacteristicNotification(characteristic, true) != false) {
+                                    Timber.i("Characteristic notified.")
+                                    Single.fromCallable { BleResult.CharacteristicNotified }
+                                } else {
+                                    Timber.i("Cannot notify characteristic.")
+                                    Single.fromCallable { BleResult.Failure(BleFailType.CANNOT_NOTIFY_CHARACTERISTIC) }
                                 }
                             }
+                            else -> Single.fromCallable { it }
                         }
                     }
+        }
+    }
+
+
+    fun onConnectionStateChanged(): Observable<Int> = bleGattCallback.connectionChangedSubject
+            .flatMap {
+                if (it.status == BluetoothGatt.GATT_SUCCESS) {
+                    Observable.fromCallable { it.newState }
+                } else {
+                    Observable.fromCallable { BluetoothProfile.STATE_DISCONNECTED }
+                }
+            }
+
+
+    fun sendCommand(macAddress: String, uuidService: UUID, uuidCharacteristic: UUID, uuidDescriptor: UUID, vararg data: Byte): Single<BleResult> {
+        return connect(macAddress)
+                .flatMap {
+                    when (it) {
+                        is BleResult.Connected -> notifyCharacteristics(uuidService, uuidCharacteristic, uuidDescriptor)
+                        else -> Single.fromCallable { it }
+                    }
+                }
+                .flatMap {
+                    when (it) {
+                        is BleResult.CharacteristicNotified -> writeCharacteristic(uuidService, uuidCharacteristic, *data)
+                        else -> Single.fromCallable { it }
+                    }
+                }
+                .flatMap {
+                    if (it is BleResult.CharacteristicsWritten) {
+                        requestCode = data[0]
+                    }
+                    Single.fromCallable { it }
                 }
     }
 
-    fun connectionState(): Observable<Int> {
-        var connectionChangeListener: BleGattCallback.ConnectionChangeListener? = null
-        return Observable.create<Int> { emitter ->
-            connectionChangeListener = object : BleGattCallback.ConnectionChangeListener {
-                override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-                    emitter.onNext(newState)
-                }
-            }
-            connectionChangeListener?.let { bleGattCallback.addConnectionChangeListener(it) }
-        }.doFinally { connectionChangeListener?.let { bleGattCallback.removeConnectionChangeListener(it) } }
+    fun onDataReceived(): Flowable<BleResult.Success> {
+        return bleGattCallback.characteristicChangedProcessor.onBackpressureBuffer()
+                .flatMap { Flowable.fromCallable { BleResult.Success(requestCode, it.characteristic.value) } }
     }
 
 }

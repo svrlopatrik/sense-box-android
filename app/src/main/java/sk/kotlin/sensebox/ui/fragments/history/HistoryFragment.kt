@@ -9,7 +9,7 @@ import sk.kotlin.sensebox.BR
 import sk.kotlin.sensebox.R
 import sk.kotlin.sensebox.bl.db.entities.File
 import sk.kotlin.sensebox.bl.vm.HistoryFragmentViewModel
-import sk.kotlin.sensebox.models.states.HistoryFragmentState
+import sk.kotlin.sensebox.models.ui_states.HistoryFragmentState
 import sk.kotlin.sensebox.ui.activities.detail.DetailActivity
 import sk.kotlin.sensebox.ui.fragments.BaseFragment
 
@@ -35,36 +35,40 @@ class HistoryFragment : BaseFragment<HistoryFragmentViewModel>() {
             setVariable(BR.viewModel, viewModel)
         }
 
-        observeState()
         initList()
+        observeLiveData()
     }
 
-    private fun observeState() {
+    private fun observeLiveData() {
         viewModel?.getHistoryFragmentState()?.observe(this, Observer { state -> state?.let { render(it) } })
+        viewModel?.getHistoryList()?.observe(this, Observer { data ->
+            data?.let {
+                if (data.size != 0) {
+                    historyListAdapter.submitList(data)
+                    list_history.refresh()
+
+                    if (data.size == 1) {
+                        historyListAdapter.notifyDataSetChanged()
+                    }
+                }
+            }
+        })
     }
 
     private fun render(state: HistoryFragmentState) {
         when (state) {
-            is HistoryFragmentState.LocalList -> historyListAdapter.setData(state.data)
-            is HistoryFragmentState.NewList -> {
-                historyListAdapter.newData(state.data)
-                list_history.smoothScrollToPosition(0)
-            }
-            is HistoryFragmentState.Error -> {
-            }
             is HistoryFragmentState.Refresh -> refresh()
             is HistoryFragmentState.HistoryDownloaded -> startDetailActivity(state.file)
-
         }
     }
 
     private fun initList() {
         context?.let {
-            historyListAdapter = HistoryListAdapter(it) { item -> onHistoryItemClick(item) }
+            historyListAdapter = HistoryListAdapter { item -> onHistoryItemClick(item) }
 
             list_history.apply {
+                layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
                 setHasFixedSize(true)
-                layoutManager = LinearLayoutManager(it)
                 adapter = historyListAdapter
             }
         }
@@ -75,7 +79,7 @@ class HistoryFragment : BaseFragment<HistoryFragmentViewModel>() {
             //try to download
             viewModel?.downloadHistoryData(item)
         } else if (!item.isUpdated) {
-            //update or display dialog
+            //display selection dialog - show or update
 
         } else {
             //all records up to date

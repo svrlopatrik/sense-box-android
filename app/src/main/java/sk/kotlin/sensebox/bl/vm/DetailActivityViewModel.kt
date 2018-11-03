@@ -11,7 +11,7 @@ import sk.kotlin.sensebox.bl.PreferencesManager
 import sk.kotlin.sensebox.bl.db.daos.RecordDao
 import sk.kotlin.sensebox.bl.db.entities.File
 import sk.kotlin.sensebox.bl.db.entities.Record
-import sk.kotlin.sensebox.models.states.DetailActivityState
+import sk.kotlin.sensebox.models.ui_states.DetailActivityState
 import sk.kotlin.sensebox.utils.SingleLiveEvent
 import sk.kotlin.sensebox.utils.ValueInterpreter
 import timber.log.Timber

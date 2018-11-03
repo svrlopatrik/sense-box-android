@@ -51,7 +51,6 @@
                 android:layout_marginEnd="32dp"
                 android:layout_marginStart="32dp"
                 android:background="@color/cc_bg_800"
-                android:visibility="@{item.count > 0 ? View.VISIBLE : View.GONE, default=gone}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/text_date" />
@@ -66,13 +65,11 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/view"
-                android:visibility="@{item.count > 0 ? View.VISIBLE : View.GONE, default=gone}">
+                app:layout_constraintTop_toBottomOf="@+id/view">
 
                 <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:visibility="@{item.count > 0 ? View.VISIBLE : View.GONE, default=gone}">
+                    android:layout_height="match_parent">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -87,8 +84,8 @@
                         android:layout_column="2"
                         android:layout_weight="1"
                         android:gravity="end"
-                        android:text="@{String.valueOf(item.count)}"
-                        tools:text="24" />
+                        android:text="@{@string/count_format(item.countDownloaded, item.countAll)}"
+                        tools:text="24/24" />
 
                 </TableRow>
 

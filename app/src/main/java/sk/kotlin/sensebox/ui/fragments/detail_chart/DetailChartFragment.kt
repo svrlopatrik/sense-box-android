@@ -44,7 +44,7 @@ class DetailChartFragment : BaseFragment<DetailActivityViewModel>() {
     override fun initViews(savedInstanceState: Bundle?) {
 
         initChart()
-        observeRecords()
+        observeLiveData()
     }
 
     private fun initChart() {
@@ -115,7 +115,7 @@ class DetailChartFragment : BaseFragment<DetailActivityViewModel>() {
         }
     }
 
-    private fun observeRecords() {
+    private fun observeLiveData() {
         viewModel?.getLoadedRecords()?.observe(this, Observer { data ->
             data?.let {
                 addGraphData(it)
@@ -129,7 +129,11 @@ class DetailChartFragment : BaseFragment<DetailActivityViewModel>() {
 
             val xAxisValueFormatter = object : IAxisValueFormatter {
                 override fun getFormattedValue(value: Float, axis: AxisBase?): String {
-                    return ValueInterpreter.millisToUtcTime(ValueInterpreter.unixTimestampToMillis(records[value.toInt()].id.toInt()))
+                    return if (value >= 0 && value < records.size) {
+                        ValueInterpreter.millisToUtcTime(records[value.toInt()].id.toLong())
+                    } else {
+                        ""
+                    }
                 }
 
                 override fun getDecimalDigits() = 0

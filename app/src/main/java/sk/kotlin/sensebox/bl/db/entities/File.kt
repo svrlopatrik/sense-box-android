@@ -16,8 +16,10 @@ import kotlinx.android.parcel.Parcelize
 data class File(
         @ColumnInfo(name = File.COLUMN_SIZE)
         var size: Int = 0,
-        @ColumnInfo(name = File.COLUMN_COUNT)
-        var count: Int = 0,
+        @ColumnInfo(name = File.COLUMN_COUNT_ALL)
+        var countAll: Int = 0,
+        @ColumnInfo(name = File.COLUMN_COUNT_DOWNLOADED)
+        var countDownloaded: Int = 0,
         @ColumnInfo(name = File.COLUMN_DAY)
         var day: Int = 0,
         @ColumnInfo(name = File.COLUMN_MONTH)
@@ -41,7 +43,9 @@ data class File(
         @Ignore
         const val COLUMN_SIZE = "size"
         @Ignore
-        const val COLUMN_COUNT = "count"
+        const val COLUMN_COUNT_ALL = "count_all"
+        @Ignore
+        const val COLUMN_COUNT_DOWNLOADED = "count_downloaded"
         @Ignore
         const val COLUMN_DAY = "day"
         @Ignore

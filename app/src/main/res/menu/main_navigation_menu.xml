@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_live"
+        android:id="@+id/action_actual"
         android:enabled="true"
         android:icon="@drawable/ic_play_circle_outline"
-        android:title="@string/live_uc"
+        android:title="@string/actual_uc"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_history"

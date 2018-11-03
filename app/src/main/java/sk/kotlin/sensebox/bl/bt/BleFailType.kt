@@ -1,6 +1,6 @@
 package sk.kotlin.sensebox.bl.bt
 
-enum class BleFailState {
+enum class BleFailType {
     BT_NOT_ENABLED,
     SCAN_FINISHED,
     SCAN_ERROR,
@@ -10,5 +10,4 @@ enum class BleFailState {
     CANNOT_WRITE_DESCRIPTOR,
     CANNOT_NOTIFY_CHARACTERISTIC,
     CANNOT_DISCOVER_SERVICES,
-    UNDEFINED_RESPONSE
 }

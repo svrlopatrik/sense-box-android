@@ -9,7 +9,7 @@ import sk.kotlin.sensebox.bl.bt.BleClient
 import sk.kotlin.sensebox.events.BleConnectionEvent
 import sk.kotlin.sensebox.events.BleFailEvent
 import sk.kotlin.sensebox.events.RxBus
-import sk.kotlin.sensebox.models.states.MainActivityState
+import sk.kotlin.sensebox.models.ui_states.MainActivityState
 import sk.kotlin.sensebox.utils.SingleLiveEvent
 import timber.log.Timber
 import javax.inject.Inject
@@ -26,7 +26,7 @@ class MainActivityViewModel @Inject constructor(
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
         if (!isInitialized) {
-            addDisposable(bleClient.connectionState()
+            addDisposable(bleClient.onConnectionStateChanged()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(

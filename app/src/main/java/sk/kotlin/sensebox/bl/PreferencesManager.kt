@@ -42,6 +42,9 @@ class PreferencesManager(context: Context, name: String) {
                 is Byte -> {
                     sharedPreferences.getInt(enum.name, (enum.getDefault() as Byte).toInt()).toByte()
                 }
+                is Long -> {
+                    sharedPreferences.getLong(enum.name, enum.getDefault() as Long)
+                }
                 else -> {
                     throw Exception("undefined type")
                 }
@@ -59,6 +62,9 @@ class PreferencesManager(context: Context, name: String) {
 
         @JvmStatic
         fun getByteValue(key: PreferenceKey) = preferencesMap[key] as Byte
+
+        @JvmStatic
+        fun getLongValue(key: PreferenceKey) = preferencesMap[key] as Long
     }
 
     private var sharedPreferences: SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
@@ -97,6 +103,10 @@ class PreferencesManager(context: Context, name: String) {
         sharedPreferences.edit().putInt(key.name, value.toInt()).commit()
     }
 
+    fun storeLong(key: PreferenceKey, value: Long) {
+        sharedPreferences.edit().putLong(key.name, value).commit()
+    }
+
     inner class Builder {
         private var editor: SharedPreferences.Editor = sharedPreferences.edit()
 
@@ -120,6 +130,11 @@ class PreferencesManager(context: Context, name: String) {
             return this
         }
 
+        fun setLong(key: PreferenceKey, value: Long): Builder {
+            editor.putLong(key.name, value)
+            return this
+        }
+
         fun store() {
             editor.commit()
         }
@@ -127,7 +142,7 @@ class PreferencesManager(context: Context, name: String) {
 
     enum class PreferenceKey(private var default: Any) {
 
-        LAST_ACTUAL_TIMESTAMP(0),
+        LAST_ACTUAL_TIMESTAMP(0L),
         LAST_ACTUAL_TEMPERATURE(0f),
         LAST_ACTUAL_HUMIDITY(0f),
         TEMPERATURE_UNIT(Constants.UNIT_FLAG_TEMPERATURE_CELSIUS),

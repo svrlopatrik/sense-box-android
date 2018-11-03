@@ -32,7 +32,7 @@ class DetailListFragment : BaseFragment<DetailActivityViewModel>() {
 
     override fun initViews(savedInstanceState: Bundle?) {
         initList()
-        observeRecords()
+        observeLiveData()
     }
 
     private fun initList() {
@@ -47,7 +47,7 @@ class DetailListFragment : BaseFragment<DetailActivityViewModel>() {
         }
     }
 
-    private fun observeRecords() {
+    private fun observeLiveData() {
         viewModel?.getLoadedRecords()?.observe(this, Observer { data -> data?.let { recordsListAdapter.setData(it) } })
     }
 }

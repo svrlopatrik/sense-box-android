@@ -1,6 +1,6 @@
 package sk.kotlin.sensebox.ui.fragments.history
 
-import android.content.Context
+import android.arch.paging.PagedListAdapter
 import android.support.v4.content.ContextCompat
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
@@ -15,40 +15,30 @@ import sk.kotlin.sensebox.databinding.ItemHistoryListBinding
  * Created by Patrik Švrlo on 9.9.2018.
  */
 class HistoryListAdapter(
-        private val context: Context,
         private val onItemClickCallback: (File) -> Unit
-) : RecyclerView.Adapter<HistoryListAdapter.ViewHolder>() {
+) : PagedListAdapter<File, HistoryListAdapter.ViewHolder>(DIFF_CALLBACK) {
 
-    private var data: MutableList<File> = ArrayList()
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<File>() {
+            override fun areItemsTheSame(oldItem: File?, newItem: File?) = oldItem?.id == newItem?.id
 
-    fun setData(data: List<File>) {
-        this.data.addAll(data)
-        notifyDataSetChanged()
-    }
-
-    fun newData(data: List<File>) {
-        if (this.data.isEmpty()) {
-            setData(data)
-            return  //diff calculation not needed
+            override fun areContentsTheSame(oldItem: File?, newItem: File?): Boolean {
+                return oldItem == newItem
+            }
         }
-
-        val diffCallback = HistoryListDiffCallback(this.data, data)
-        val diffResult = DiffUtil.calculateDiff(diffCallback, true)
-
-        this.data.clear()
-        this.data.addAll(data)
-
-        diffResult.dispatchUpdatesTo(this)
     }
-
-    override fun getItemCount() = data.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(ItemHistoryListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(data[position])
+        val file = getItem(position)
+        if (file != null) {
+            holder.bind(file)
+        } else {
+            holder.clear()
+        }
     }
 
     inner class ViewHolder(private val viewBinding: ItemHistoryListBinding) : RecyclerView.ViewHolder(viewBinding.root) {
@@ -66,6 +56,14 @@ class HistoryListAdapter(
             viewBinding.executePendingBindings()
 
             viewBinding.root.setOnClickListener { onItemClickCallback(item) }
+        }
+
+        fun clear() {
+            viewBinding.textAverageHumidity.text = null
+            viewBinding.textAverageTemperature.text = null
+            viewBinding.textDate.text = null
+            viewBinding.textMeasurementsCount.text = null
+            viewBinding.imageState.setImageDrawable(null)
         }
     }
 }

@@ -35,6 +35,8 @@ object Constants {
     val RESPONSE_FLAG_END = "END".toByteArray()
     val RESPONSE_FLAG_UDEF = "UDEF".toByteArray()
 
+    val SINGLE_RECORD_SIZE = 34
+
     val ENABLE_NOTIFICATIONS_INDICATIONS = byteArrayOf(0x03, 0x00)
 
     const val TIMEZONE_RTC_MODULE = "UTC"

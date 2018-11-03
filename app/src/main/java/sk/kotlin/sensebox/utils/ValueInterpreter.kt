@@ -87,10 +87,10 @@ object ValueInterpreter {
     }
 
     @JvmStatic
-    fun unixTimestampToCalendar(unixTimestamp: Int): Calendar {
+    fun rtcMillisToCalendar(millis: Long): Calendar {
         return Calendar.getInstance().apply {
             timeZone = TimeZone.getTimeZone(Constants.TIMEZONE_RTC_MODULE)
-            timeInMillis = unixTimestampToMillis(unixTimestamp)
+            timeInMillis = millis
         }
     }
 
